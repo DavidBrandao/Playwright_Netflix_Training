@@ -55,3 +55,14 @@ test('corpo JSON grande devolve 413 com { error }', async () => {
   assert.equal(r.status, 413);
   assert.ok(r.body.error);
 });
+
+test('seed é atômico e valida tipos', async () => {
+  const r = await ctx.call('POST', '/api/test/seed', {
+    json: { users: [{ name: 'QA Atomic', email: 'qa-atomic@teste.com', password: 'abc123' }], titles: [{ type: 'x' }] },
+  });
+  assert.equal(r.status, 400);
+  const login = await ctx.call('POST', '/api/auth/login', { json: { email: 'qa-atomic@teste.com', password: 'abc123' } });
+  assert.equal(login.status, 401);
+  assert.equal((await ctx.call('POST', '/api/test/seed', { json: { users: 5 } })).status, 400);
+  assert.equal((await ctx.call('POST', '/api/test/seed', { json: { titles: 'x' } })).status, 400);
+});

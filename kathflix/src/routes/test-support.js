@@ -1,6 +1,6 @@
 const express = require('express');
 const { httpError } = require('../errors');
-const { createUser } = require('../users-service');
+const { createUser, validateUserInput } = require('../users-service');
 const { parseTitleInput, insertTitle } = require('../titles-service');
 const { resetToSeed } = require('../seed');
 
@@ -14,14 +14,25 @@ router.post('/reset', (req, res) => {
 router.post('/seed', (req, res) => {
   const db = req.app.locals.db;
   const { users = [], titles = [] } = req.body || {};
-  const createdUsers = users.map((u) => {
-    const row = createUser(db, u);
-    return { id: row.id, email: row.email };
-  });
-  const createdTitles = titles.map((t) => {
-    const id = insertTitle(db, parseTitleInput(t, null));
-    return { id, title: t.title };
-  });
+  if (!Array.isArray(users) || !Array.isArray(titles)) throw httpError(400, 'users e titles devem ser arrays');
+  const isObj = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
+  if (![...users, ...titles].every(isObj)) throw httpError(400, 'users e titles devem conter objetos');
+  users.forEach((u) => validateUserInput(u));
+  const parsed = titles.map((t) => parseTitleInput(t, null));
+  let createdUsers;
+  let createdTitles;
+  db.exec('BEGIN');
+  try {
+    createdUsers = users.map((u) => {
+      const row = createUser(db, u);
+      return { id: row.id, email: row.email };
+    });
+    createdTitles = parsed.map((p, i) => ({ id: insertTitle(db, p), title: titles[i].title }));
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    throw err;
+  }
   res.status(201).json({ users: createdUsers, titles: createdTitles });
 });
 
