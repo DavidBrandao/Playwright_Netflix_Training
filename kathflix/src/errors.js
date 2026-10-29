@@ -19,6 +19,9 @@ function errorHandler(err, req, res, next) {
     const msg = err.code === 'LIMIT_FILE_SIZE' ? 'Imagem acima de 2 MB' : err.message;
     return res.status(400).json({ error: msg });
   }
+  if (Number.isInteger(err.status) && err.status >= 400 && err.status < 500) {
+    return res.status(err.status).json({ error: err.message });
+  }
   console.error(err);
   return res.status(500).json({ error: 'Erro interno' });
 }

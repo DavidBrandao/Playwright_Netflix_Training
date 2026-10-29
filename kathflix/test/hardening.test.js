@@ -49,3 +49,9 @@ test('GET /api/titles tolera parâmetros estranhos', async () => {
   const us = await get('?q=_');
   assert.ok(us.body.every((t) => t.title.includes('_')));
 });
+
+test('corpo JSON grande devolve 413 com { error }', async () => {
+  const r = await ctx.call('POST', '/api/auth/login', { json: { email: 'a@b.com', password: 'x'.repeat(200 * 1024) } });
+  assert.equal(r.status, 413);
+  assert.ok(r.body.error);
+});
