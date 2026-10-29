@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KathFlix - Início</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="nav"></div>
+  <div id="promo-banner" class="promo" role="alert" data-testid="promo-banner" hidden>
+    <span data-testid="promo-text">Novo episódio disponível! Deseja ver agora?</span>
+    <button type="button" id="promo-watch" data-testid="promo-watch">Ver agora</button>
+    <button type="button" id="promo-dismiss" data-testid="promo-dismiss" class="secondary">Dispensar</button>
+    <button type="button" id="promo-close" data-testid="promo-close" class="secondary" aria-label="Fechar">×</button>
+  </div>
+  <main>
+    <section class="hero" id="hero"></section>
+
+    <div class="filters">
+      <div><label for="search-input">Buscar</label>
+        <input id="search-input" data-testid="search-input" type="search" placeholder="Digite o título"></div>
+      <div><label for="category-select">Categoria</label>
+        <select id="category-select" data-testid="category-select">
+          <option value="">Todas</option>
+          <option>Ação</option><option>Comédia</option><option>Drama</option><option>Terror</option>
+          <option>Ficção</option><option>Animação</option><option>Documentário</option>
+        </select></div>
+      <div><label for="sort-select">Ordenar por</label>
+        <select id="sort-select" data-testid="sort-select">
+          <option value="recent">Mais recentes</option><option value="az">A-Z</option><option value="year">Ano</option>
+        </select></div>
+    </div>
+
+    <section data-testid="section-new"><h2>Novidades</h2><div class="row" id="row-new"></div></section>
+    <section data-testid="section-catalog"><h2>Catálogo</h2><div class="row" id="row-catalog"></div>
+      <p id="catalog-empty" data-testid="catalog-empty" hidden>Nenhum título encontrado</p></section>
+    <section data-testid="section-favorites"><h2>Meus Favoritos</h2><div class="row" id="row-fav"></div>
+      <p id="fav-empty" data-testid="fav-empty" hidden>Você ainda não tem favoritos</p></section>
+  </main>
+  <script src="/js/common.js"></script>
+  <script src="/js/home.js"></script>
+</body>
+</html>
