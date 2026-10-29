@@ -14,6 +14,8 @@ function createApp({ dbPath = ':memory:', uploadDir, testApi } = {}) {
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
+  app.use('/api/auth', require('./routes/auth'));
+
   app.use('/api', notFound);
   app.get('/', (req, res) => res.redirect('/login.html'));
   app.use(express.static(path.join(__dirname, '..', 'public')));
