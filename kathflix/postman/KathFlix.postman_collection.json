@@ -1,0 +1,89 @@
+{
+  "info": {
+    "name": "KathFlix API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Rode primeiro 'Auth / Login (admin)': o script grava o token em {{token}}. As demais requisições usam esse token.\n\nRegras: capa por upload aceita .png/.jpg/.jpeg/.gif/.webp até 2 MB; 'year' entre 1888 e 2100; links de vídeo devem ser YouTube válidos; /api/test/cleanup exige prefixo com pelo menos 3 caracteres (sem contar % e _); /api/test/seed é atômico (tudo ou nada)."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "titleId", "value": "" },
+    { "key": "userId", "value": "" }
+  ],
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (admin)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"] } }],
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@kathflix.com\",\n  \"password\": \"admin123\"\n}" } }
+        },
+        {
+          "name": "Login (user)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"] } }],
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@kathflix.com\",\n  \"password\": \"user123\"\n}" } }
+        },
+        {
+          "name": "Register",
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/register", "body": { "mode": "raw", "raw": "{\n  \"name\": \"Maria\",\n  \"email\": \"maria@teste.com\",\n  \"password\": \"senha123\"\n}" } }
+        },
+        { "name": "Logout", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/logout" } }
+      ]
+    },
+    {
+      "name": "Catálogo e favoritos",
+      "item": [
+        { "name": "Listar títulos", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/titles?sort=az", "host": ["{{baseUrl}}"], "path": ["api", "titles"], "query": [{ "key": "sort", "value": "az" }, { "key": "genre", "value": "", "disabled": true }, { "key": "q", "value": "", "disabled": true }] } } },
+        { "name": "Detalhe do título", "request": { "method": "GET", "url": "{{baseUrl}}/api/titles/{{titleId}}" } },
+        { "name": "Listar favoritos", "request": { "method": "GET", "url": "{{baseUrl}}/api/favorites" } },
+        { "name": "Favoritar", "request": { "method": "POST", "url": "{{baseUrl}}/api/favorites/{{titleId}}" } },
+        { "name": "Desfavoritar", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/favorites/{{titleId}}" } }
+      ]
+    },
+    {
+      "name": "Perfil",
+      "item": [
+        { "name": "Meus dados", "request": { "method": "GET", "url": "{{baseUrl}}/api/me" } },
+        { "name": "Atualizar perfil", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/me", "body": { "mode": "raw", "raw": "{\n  \"name\": \"Maria Souza\",\n  \"bio\": \"Fã de séries\"\n}" } } }
+      ]
+    },
+    {
+      "name": "Admin (use o token do admin)",
+      "item": [
+        {
+          "name": "Criar filme (JSON + cover_url)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('titleId', pm.response.json().id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/admin/titles", "body": { "mode": "raw", "raw": "{\n  \"type\": \"movie\",\n  \"title\": \"Meu Filme\",\n  \"genre\": \"Drama\",\n  \"year\": 2024,\n  \"video_url\": \"https://youtu.be/aqz-KE-bpKQ\",\n  \"cover_url\": \"https://picsum.photos/300/450\"\n}" } }
+        },
+        {
+          "name": "Criar filme (multipart + imagem)",
+          "request": { "method": "POST", "description": "Campo 'cover': apenas .png, .jpg, .jpeg, .gif ou .webp, até 2 MB.", "url": "{{baseUrl}}/api/admin/titles", "body": { "mode": "formdata", "formdata": [{ "key": "type", "value": "movie", "type": "text" }, { "key": "title", "value": "Filme com arquivo", "type": "text" }, { "key": "genre", "value": "Ação", "type": "text" }, { "key": "video_url", "value": "https://youtu.be/aqz-KE-bpKQ", "type": "text" }, { "key": "cover", "type": "file", "src": [] }] } }
+        },
+        {
+          "name": "Criar série",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('titleId', pm.response.json().id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/admin/titles", "body": { "mode": "raw", "raw": "{\n  \"type\": \"series\",\n  \"title\": \"Minha Série\",\n  \"genre\": \"Ação\",\n  \"episodes\": [\n    { \"season\": 1, \"number\": 1, \"name\": \"Piloto\", \"video_url\": \"https://www.youtube.com/watch?v=aqz-KE-bpKQ\" },\n    { \"season\": 1, \"number\": 2, \"name\": \"Segundo\", \"video_url\": \"https://www.youtube.com/watch?v=eRsGyueVLvQ\" }\n  ]\n}" } }
+        },
+        { "name": "Remover título", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/admin/titles/{{titleId}}" } },
+        { "name": "Listar usuários ativos", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/users" } },
+        { "name": "Listar todos os usuários", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/users?all=true" } },
+        {
+          "name": "Criar usuário",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('userId', pm.response.json().id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/admin/users", "body": { "mode": "raw", "raw": "{\n  \"name\": \"Novo Usuário\",\n  \"email\": \"novo@teste.com\",\n  \"password\": \"abc123\",\n  \"role\": \"user\"\n}" } }
+        },
+        { "name": "Remover usuário", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/admin/users/{{userId}}" } }
+      ]
+    },
+    {
+      "name": "Apoio a testes (sem token)",
+      "item": [
+        { "name": "Reset", "request": { "auth": { "type": "noauth" }, "method": "POST", "url": "{{baseUrl}}/api/test/reset" } },
+        { "name": "Seed em lote", "request": { "auth": { "type": "noauth" }, "method": "POST", "description": "Atômico: se qualquer item for inválido, nada é criado.", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/test/seed", "body": { "mode": "raw", "raw": "{\n  \"users\": [{ \"name\": \"QA Um\", \"email\": \"qa-um@teste.com\", \"password\": \"abc123\" }],\n  \"titles\": [{ \"type\": \"movie\", \"title\": \"qa-Filme\", \"genre\": \"Drama\", \"video_url\": \"https://youtu.be/aqz-KE-bpKQ\" }]\n}" } } },
+        { "name": "Cleanup por prefixo", "request": { "auth": { "type": "noauth" }, "method": "DELETE", "description": "Prefixo precisa ter pelo menos 3 caracteres, sem contar % e _.", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/test/cleanup", "body": { "mode": "raw", "raw": "{ \"prefix\": \"qa-\" }" } } }
+      ]
+    }
+  ]
+}
