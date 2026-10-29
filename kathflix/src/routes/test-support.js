@@ -26,10 +26,10 @@ router.post('/seed', (req, res) => {
 });
 
 router.delete('/cleanup', (req, res) => {
-  const prefix = String((req.body && req.body.prefix) || req.query.prefix || '');
+  const prefix = String((req.body && req.body.prefix) || req.query.prefix || '').replace(/[%_]/g, '');
   if (prefix.length < 3) throw httpError(400, 'prefix deve ter ao menos 3 caracteres');
   const db = req.app.locals.db;
-  const like = `${prefix.replace(/[%_]/g, '')}%`;
+  const like = `${prefix}%`;
   const users = db.prepare("DELETE FROM users WHERE email LIKE ? AND email NOT IN ('admin@kathflix.com','user@kathflix.com')").run(like);
   const titles = db.prepare('DELETE FROM titles WHERE title LIKE ?').run(like);
   res.json({ users: users.changes, titles: titles.changes });

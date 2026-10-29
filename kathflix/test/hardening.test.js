@@ -27,3 +27,13 @@ test('upload rejeita extensões fora da whitelist mesmo com mimetype image/*', a
     assert.equal(t.status, 400, `cover ${name}`);
   }
 });
+
+test('cleanup com prefixo só de curingas devolve 400 e não apaga nada', async () => {
+  for (const prefix of ['%%%', '___']) {
+    const r = await ctx.call('DELETE', '/api/test/cleanup', { json: { prefix } });
+    assert.equal(r.status, 400, prefix);
+  }
+  const list = await ctx.call('GET', '/api/titles', { token: adminToken });
+  assert.ok(list.body.length > 0);
+  assert.ok(await ctx.user());
+});
