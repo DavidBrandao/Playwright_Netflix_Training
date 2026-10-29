@@ -18,6 +18,7 @@ function createApp({ dbPath = ':memory:', uploadDir, testApi } = {}) {
   app.use('/api/titles', require('./routes/titles'));
   app.use('/api/favorites', require('./routes/favorites'));
   app.use('/api/me', require('./routes/me')(app.locals.uploadDir));
+  app.use('/api/admin', require('./routes/admin')(app.locals.uploadDir));
 
   app.use('/api', notFound);
   app.get('/', (req, res) => res.redirect('/login.html'));
