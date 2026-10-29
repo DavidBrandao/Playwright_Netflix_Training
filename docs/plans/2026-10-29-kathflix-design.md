@@ -11,7 +11,7 @@ Criar o **KathFlix**, uma app estilo Netflix (frontend + API) para a professora 
 | Tema | Decisão |
 |---|---|
 | Stack | Node + Express, frontend em HTML/CSS/JS puro (sem build) |
-| Persistência | SQLite em arquivo (`better-sqlite3`) |
+| Persistência | SQLite em arquivo (`node:sqlite` (embutido no Node 24)) |
 | Acesso | Login + cadastro público; papéis `user` e `admin` |
 | Autenticação | Token Bearer (tabela `sessions`), guardado no `localStorage` no frontend |
 | Repositório | Raiz = `Modulo2/scripts`; remoto `https://github.com/DavidBrandao/Playwright_Netflix_Training.git` |
@@ -26,7 +26,7 @@ scripts/                         <- raiz do git
 ├── automation/                  <- código atual movido, sem alterações (EXEMPLO)
 │   ├── api_helper/ pages/ tests/ playwright.config.ts package.json ...
 └── kathflix/
-    ├── package.json             (express, better-sqlite3, multer, bcryptjs, swagger-ui-express, yaml)
+    ├── package.json             (express, multer, bcryptjs, swagger-ui-express, yaml)
     ├── server.js                <- sobe API + serve o frontend
     ├── openapi.yaml             <- especificação da API (fonte do Swagger)
     ├── src/
