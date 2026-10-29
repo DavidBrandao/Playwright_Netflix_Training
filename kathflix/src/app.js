@@ -21,6 +21,13 @@ function createApp({ dbPath = ':memory:', uploadDir, testApi } = {}) {
   app.use('/api/admin', require('./routes/admin')(app.locals.uploadDir));
   if (app.locals.testApi) app.use('/api/test', require('./routes/test-support'));
 
+  const fs = require('node:fs');
+  const YAML = require('yaml');
+  const swaggerUi = require('swagger-ui-express');
+  const specText = fs.readFileSync(path.join(__dirname, '..', 'openapi.yaml'), 'utf8');
+  app.get('/api-docs/openapi.yaml', (req, res) => res.type('text/yaml').send(specText));
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(YAML.parse(specText), { customSiteTitle: 'KathFlix API' }));
+
   app.use('/api', notFound);
   app.get('/', (req, res) => res.redirect('/login.html'));
   app.use(express.static(path.join(__dirname, '..', 'public')));

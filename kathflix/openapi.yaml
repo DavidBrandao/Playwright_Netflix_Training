@@ -1,0 +1,437 @@
+openapi: 3.0.3
+info:
+  title: KathFlix API
+  version: 1.0.0
+  description: |
+    API do KathFlix, app de treino para automação com Playwright. Tudo que o frontend faz também pode ser feito aqui,
+    o que permite montar **setup** e **teardown** de testes via API.
+
+    ## Como colocar no ar
+    ```
+    cd kathflix
+    npm install
+    npm start
+    ```
+    App em `http://localhost:3000`, esta documentação em `http://localhost:3000/api-docs`.
+    Variáveis: `PORT` (padrão 3000), `KATHFLIX_DB` (caminho do arquivo SQLite), `KATHFLIX_TEST_API=off` (desliga `/api/test/*`).
+
+    ## Como autenticar
+    1. Chame `POST /api/auth/login` com `{"email":"admin@kathflix.com","password":"admin123"}`.
+    2. Copie o `token` da resposta.
+    3. Clique em **Authorize** (cadeado) nesta página e cole o token, ou envie o header `Authorization: Bearer <token>`.
+
+    ## Usuários do seed
+    | Papel | E-mail | Senha |
+    |---|---|---|
+    | admin | admin@kathflix.com | admin123 |
+    | user | user@kathflix.com | user123 |
+
+    ## Erros
+    Sempre no formato `{ "error": "mensagem" }` com status 400, 401, 403, 404 ou 409.
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: Auth
+  - name: Catálogo
+  - name: Favoritos
+  - name: Perfil
+  - name: Admin
+  - name: Apoio a testes
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string, example: Título não encontrado }
+    User:
+      type: object
+      properties:
+        id: { type: integer, example: 3 }
+        name: { type: string, example: Maria }
+        email: { type: string, example: maria@teste.com }
+        role: { type: string, enum: [user, admin] }
+        bio: { type: string }
+        avatar_url: { type: string, nullable: true, example: /uploads/1700000000000-ab12cd34.png }
+        created_at: { type: integer, description: epoch em ms }
+    Episode:
+      type: object
+      properties:
+        id: { type: integer }
+        season: { type: integer, example: 1 }
+        number: { type: integer, example: 1 }
+        name: { type: string, example: Piloto }
+        video_url: { type: string, example: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ' }
+    Title:
+      type: object
+      properties:
+        id: { type: integer }
+        type: { type: string, enum: [movie, series] }
+        title: { type: string, example: Big Buck Bunny }
+        description: { type: string }
+        year: { type: integer, nullable: true, example: 2008 }
+        genre: { type: string, enum: [Ação, Comédia, Drama, Terror, Ficção, Animação, Documentário] }
+        cover_url: { type: string, example: /img/cover-default.svg }
+        video_url: { type: string, nullable: true, description: apenas para filmes }
+        is_new: { type: boolean }
+        favorite: { type: boolean, description: presente nas listagens e no detalhe }
+        episodes:
+          type: array
+          description: presente no detalhe (GET por id) e na criação
+          items: { $ref: '#/components/schemas/Episode' }
+    EpisodeInput:
+      type: object
+      required: [video_url]
+      properties:
+        season: { type: integer, default: 1 }
+        number: { type: integer }
+        name: { type: string }
+        video_url: { type: string, description: link do YouTube }
+    TitleInput:
+      type: object
+      required: [type, title, genre]
+      properties:
+        type: { type: string, enum: [movie, series] }
+        title: { type: string, example: Meu Filme }
+        description: { type: string }
+        year: { type: integer, example: 2024 }
+        genre: { type: string, enum: [Ação, Comédia, Drama, Terror, Ficção, Animação, Documentário] }
+        cover_url: { type: string, description: link de imagem (alternativa ao arquivo `cover`) }
+        is_new: { type: boolean, default: true }
+        video_url: { type: string, description: obrigatório quando type=movie, example: 'https://youtu.be/aqz-KE-bpKQ' }
+        episodes:
+          type: array
+          description: obrigatório (mínimo 1) quando type=series
+          items: { $ref: '#/components/schemas/EpisodeInput' }
+    UserInput:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, example: Maria }
+        email: { type: string, example: maria@teste.com }
+        password: { type: string, minLength: 6, example: senha123 }
+        role: { type: string, enum: [user, admin], default: user, description: apenas em /api/admin/users e /api/test/seed }
+  responses:
+    Unauthorized:
+      description: Token ausente, inválido ou expirado
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: Requer papel admin
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Recurso não encontrado
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    BadRequest:
+      description: Dados inválidos
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Cadastrar usuário (papel user)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserInput' }
+            example: { name: Maria, email: maria@teste.com, password: senha123 }
+      responses:
+        '201':
+          description: Usuário criado
+          content: { application/json: { schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: E-mail já cadastrado
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login (devolve o token)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties: { email: { type: string }, password: { type: string } }
+            example: { email: admin@kathflix.com, password: admin123 }
+      responses:
+        '200':
+          description: Login realizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string, example: 3f1c2a4e-9d2b-4a53-8d56-2d0c3d9a7e11 }
+                  user: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401':
+          description: E-mail ou senha inválidos
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Encerrar sessão (invalida o token)
+      responses:
+        '204': { description: Sessão encerrada }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/titles:
+    get:
+      tags: [Catálogo]
+      summary: Listar títulos
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: busca por parte do título }
+        - { name: genre, in: query, schema: { type: string }, description: 'categoria; "Todas" ou vazio = sem filtro' }
+        - { name: new, in: query, schema: { type: boolean }, description: 'true = só novidades' }
+        - { name: sort, in: query, schema: { type: string, enum: [recent, az, year] }, description: ordenação }
+      responses:
+        '200':
+          description: Lista de títulos
+          content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Title' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/titles/{id}:
+    get:
+      tags: [Catálogo]
+      summary: Detalhe do título (série inclui episódios)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Título
+          content: { application/json: { schema: { $ref: '#/components/schemas/Title' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/favorites:
+    get:
+      tags: [Favoritos]
+      summary: Listar favoritos do usuário logado
+      responses:
+        '200':
+          description: Lista de títulos favoritos
+          content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Title' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/favorites/{titleId}:
+    parameters:
+      - { name: titleId, in: path, required: true, schema: { type: integer } }
+    post:
+      tags: [Favoritos]
+      summary: Favoritar (idempotente)
+      responses:
+        '201':
+          description: Favoritado
+          content: { application/json: { schema: { type: object, properties: { titleId: { type: integer }, favorite: { type: boolean, example: true } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Favoritos]
+      summary: Desfavoritar
+      responses:
+        '204': { description: Removido }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/me:
+    get:
+      tags: [Perfil]
+      summary: Dados do usuário logado
+      responses:
+        '200': { description: Usuário, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [Perfil]
+      summary: Atualizar perfil (campos opcionais)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                bio: { type: string }
+                password: { type: string, minLength: 6 }
+                avatar_url: { type: string }
+            example: { name: Maria Souza, bio: Fã de séries }
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                bio: { type: string }
+                password: { type: string }
+                avatar: { type: string, format: binary, description: imagem até 2 MB }
+      responses:
+        '200': { description: Usuário atualizado, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: E-mail já em uso
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    delete:
+      tags: [Perfil]
+      summary: Excluir a própria conta
+      responses:
+        '204': { description: Conta removida }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/admin/titles:
+    post:
+      tags: [Admin]
+      summary: Criar filme ou série
+      description: |
+        Aceita JSON (use `cover_url`) ou `multipart/form-data` (use o arquivo `cover`).
+        No multipart, `episodes` vai como **string JSON**.
+        Sem imagem alguma, a capa padrão é usada.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TitleInput' }
+            examples:
+              filme:
+                value: { type: movie, title: Meu Filme, genre: Drama, year: 2024, video_url: 'https://youtu.be/aqz-KE-bpKQ', cover_url: 'https://picsum.photos/300/450' }
+              serie:
+                value:
+                  type: series
+                  title: Minha Série
+                  genre: Ação
+                  episodes:
+                    - { season: 1, number: 1, name: Piloto, video_url: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ' }
+                    - { season: 1, number: 2, name: Segundo, video_url: 'https://www.youtube.com/watch?v=eRsGyueVLvQ' }
+          multipart/form-data:
+            schema:
+              type: object
+              required: [type, title, genre]
+              properties:
+                type: { type: string, enum: [movie, series] }
+                title: { type: string }
+                description: { type: string }
+                year: { type: integer }
+                genre: { type: string }
+                video_url: { type: string }
+                episodes: { type: string, description: 'string JSON: [{"season":1,"number":1,"name":"Piloto","video_url":"..."}]' }
+                cover: { type: string, format: binary, description: imagem até 2 MB }
+      responses:
+        '201': { description: Título criado, content: { application/json: { schema: { $ref: '#/components/schemas/Title' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/admin/titles/{id}:
+    delete:
+      tags: [Admin]
+      summary: Remover título (e episódios/favoritos relacionados)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204': { description: Removido }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/admin/users:
+    get:
+      tags: [Admin]
+      summary: Listar usuários ativos (sessão nos últimos 30 min)
+      parameters:
+        - { name: all, in: query, schema: { type: boolean }, description: 'true = todos os cadastrados' }
+      responses:
+        '200':
+          description: Usuários
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/User'
+                    - type: object
+                      properties: { last_seen_at: { type: integer, nullable: true } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Admin]
+      summary: Criar usuário (permite definir o papel)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserInput' }
+            example: { name: Novo Admin, email: novo@teste.com, password: abc123, role: admin }
+      responses:
+        '201': { description: Usuário criado, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: E-mail já cadastrado
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+  /api/admin/users/{id}:
+    delete:
+      tags: [Admin]
+      summary: Remover usuário (não permite remover a si mesmo)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204': { description: Removido }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/test/reset:
+    post:
+      tags: [Apoio a testes]
+      summary: Voltar o banco ao seed inicial
+      description: Sem autenticação. Indisponível se `KATHFLIX_TEST_API=off`.
+      security: []
+      responses:
+        '200': { description: Banco resetado, content: { application/json: { schema: { type: object, properties: { status: { type: string, example: reset } } } } } }
+  /api/test/seed:
+    post:
+      tags: [Apoio a testes]
+      summary: Criar usuários e títulos em lote
+      description: Sem autenticação. Usa as mesmas regras de validação de `/api/admin/*`.
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                users: { type: array, items: { $ref: '#/components/schemas/UserInput' } }
+                titles: { type: array, items: { $ref: '#/components/schemas/TitleInput' } }
+            example:
+              users: [{ name: QA Um, email: qa-um@teste.com, password: abc123 }]
+              titles: [{ type: movie, title: qa-Filme, genre: Drama, video_url: 'https://youtu.be/aqz-KE-bpKQ' }]
+      responses:
+        '201':
+          description: Itens criados (com ids)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users: { type: array, items: { type: object, properties: { id: { type: integer }, email: { type: string } } } }
+                  titles: { type: array, items: { type: object, properties: { id: { type: integer }, title: { type: string } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: E-mail já cadastrado
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+  /api/test/cleanup:
+    delete:
+      tags: [Apoio a testes]
+      summary: Remover tudo que começa com um prefixo (teardown)
+      description: Remove usuários cujo e-mail começa com o prefixo e títulos cujo nome começa com o prefixo. Nunca remove os usuários do seed. Prefixo mínimo de 3 caracteres.
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, required: [prefix], properties: { prefix: { type: string, example: 'qa-' } } }
+      responses:
+        '200': { description: Quantidade removida, content: { application/json: { schema: { type: object, properties: { users: { type: integer }, titles: { type: integer } } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
