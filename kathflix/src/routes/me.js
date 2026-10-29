@@ -1,6 +1,6 @@
 const express = require('express');
 const { auth } = require('../middleware/auth');
-const { makeUpload } = require('../upload');
+const { makeUpload, discardFileOnError } = require('../upload');
 const { publicUser, validateUserInput, emailTaken, bcrypt } = require('../users-service');
 const { httpError } = require('../errors');
 
@@ -11,7 +11,7 @@ module.exports = function meRouter(uploadDir) {
 
   router.get('/', (req, res) => res.json(publicUser(req.user)));
 
-  router.put('/', upload.single('avatar'), (req, res) => {
+  router.put('/', upload.single('avatar'), discardFileOnError((req, res) => {
     const db = req.app.locals.db;
     const body = req.body || {};
     if (body.password === '') delete body.password; // formulário sem troca de senha
@@ -31,7 +31,7 @@ module.exports = function meRouter(uploadDir) {
       next.name, next.email, next.bio, next.avatar_url ?? null, next.password_hash, req.user.id
     );
     res.json(publicUser(db.prepare('SELECT * FROM users WHERE id=?').get(req.user.id)));
-  });
+  }));
 
   router.delete('/', (req, res) => {
     req.app.locals.db.prepare('DELETE FROM users WHERE id=?').run(req.user.id);

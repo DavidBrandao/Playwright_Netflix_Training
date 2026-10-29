@@ -1,7 +1,7 @@
 const express = require('express');
 const { httpError } = require('../errors');
 const { auth, requireAdmin } = require('../middleware/auth');
-const { makeUpload } = require('../upload');
+const { makeUpload, discardFileOnError } = require('../upload');
 const { createUser, publicUser } = require('../users-service');
 const { parseTitleInput, insertTitle, presentTitle } = require('../titles-service');
 const { ACTIVE_WINDOW_MS } = require('../util');
@@ -11,7 +11,7 @@ module.exports = function adminRouter(uploadDir) {
   const upload = makeUpload(uploadDir);
   router.use(auth, requireAdmin);
 
-  router.post('/titles', upload.single('cover'), (req, res) => {
+  router.post('/titles', upload.single('cover'), discardFileOnError((req, res) => {
     const db = req.app.locals.db;
     const input = parseTitleInput(req.body || {}, req.file ? `/uploads/${req.file.filename}` : null);
     const id = insertTitle(db, input);
@@ -20,7 +20,7 @@ module.exports = function adminRouter(uploadDir) {
       .prepare('SELECT id, season, number, name, video_url FROM episodes WHERE title_id=? ORDER BY season, number')
       .all(id);
     res.status(201).json(presentTitle(row, { episodes }));
-  });
+  }));
 
   router.delete('/titles/:id', (req, res) => {
     const r = req.app.locals.db.prepare('DELETE FROM titles WHERE id=?').run(Number(req.params.id));

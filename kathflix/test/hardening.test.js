@@ -66,3 +66,16 @@ test('seed é atômico e valida tipos', async () => {
   assert.equal((await ctx.call('POST', '/api/test/seed', { json: { users: 5 } })).status, 400);
   assert.equal((await ctx.call('POST', '/api/test/seed', { json: { titles: 'x' } })).status, 400);
 });
+
+test('requisição que falha após o upload não deixa arquivo órfão', async () => {
+  const dir = ctx.app.locals.uploadDir;
+  const before = fs.readdirSync(dir).length;
+  const f = img('cover', 'ok.png');
+  f.append('type', 'movie'); f.append('title', ''); f.append('genre', 'Drama'); f.append('video_url', 'https://youtu.be/aqz-KE-bpKQ');
+  assert.equal((await ctx.call('POST', '/api/admin/titles', { token: adminToken, form: f })).status, 400);
+
+  const me = img('avatar', 'ok.png');
+  me.append('email', 'user@kathflix.com');
+  assert.equal((await ctx.call('PUT', '/api/me', { token: adminToken, form: me })).status, 409);
+  assert.equal(fs.readdirSync(dir).length, before);
+});

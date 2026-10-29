@@ -20,4 +20,18 @@ function makeUpload(dir) {
   });
 }
 
-module.exports = { makeUpload };
+// Se o handler falhar depois do multer salvar o arquivo, apaga o arquivo órfão.
+function discardFileOnError(handler) {
+  return (req, res, next) => {
+    try {
+      return handler(req, res, next);
+    } catch (err) {
+      if (req.file) {
+        try { fs.unlinkSync(req.file.path); } catch { /* já removido */ }
+      }
+      throw err;
+    }
+  };
+}
+
+module.exports = { makeUpload, discardFileOnError };
