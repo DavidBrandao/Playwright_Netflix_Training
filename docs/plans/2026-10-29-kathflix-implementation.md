@@ -1,14 +1,14 @@
-# KethFlix Implementation Plan
+# KathFlix Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Construir o KethFlix (app estilo Netflix com API REST + frontend HTML/JS puro) para treinos de Playwright, e reorganizar o repositório com o código atual em `automation/`.
+**Goal:** Construir o KathFlix (app estilo Netflix com API REST + frontend HTML/JS puro) para treinos de Playwright, e reorganizar o repositório com o código atual em `automation/`.
 
 **Architecture:** Um único processo Node/Express serve a API (`/api/*`), o frontend estático (`/`) e o Swagger (`/api-docs`). Persistência em SQLite via `node:sqlite` (embutido no Node 24, sem compilar módulo nativo). O frontend é um cliente fino da API, com token Bearer no `localStorage`.
 
 **Tech Stack:** Node 24, Express 4, `node:sqlite`, multer, bcryptjs, swagger-ui-express, yaml, `node:test`.
 
-**Design de referência:** `docs/plans/2026-10-29-kethflix-design.md`.
+**Design de referência:** `docs/plans/2026-10-29-kathflix-design.md`.
 
 **Desvio do design (aprovado implicitamente por simplicidade):** o design cita `better-sqlite3`; este plano usa `node:sqlite` porque evita build nativo no Windows. Task 2 atualiza o documento de design.
 
@@ -16,8 +16,8 @@
 - Diretório de trabalho: `C:\Users\David\Documents\Softex\Modulo2\scripts` (raiz do git). Comandos em Git Bash.
 - Todo commit termina com o trailer:
   `-m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"`
-- Testes da API: `cd kethflix && npm test`. O Node imprime um `ExperimentalWarning` do SQLite; é esperado e inofensivo.
-- Credenciais do seed: `admin@kethflix.com` / `admin123` e `user@kethflix.com` / `user123`.
+- Testes da API: `cd kathflix && npm test`. O Node imprime um `ExperimentalWarning` do SQLite; é esperado e inofensivo.
+- Credenciais do seed: `admin@kathflix.com` / `admin123` e `user@kathflix.com` / `user123`.
 
 ---
 
@@ -47,11 +47,11 @@ playwright-report/
 blob-report/
 .DS_Store
 
-# KethFlix
-kethflix/data/*.db
-kethflix/data/*.db-*
-kethflix/public/uploads/*
-!kethflix/public/uploads/.gitkeep
+# KathFlix
+kathflix/data/*.db
+kathflix/data/*.db-*
+kathflix/public/uploads/*
+!kathflix/public/uploads/.gitkeep
 ```
 
 **Step 3: Verificar que nada de código foi perdido**
@@ -70,17 +70,17 @@ git commit -m "chore: move existing Playwright code to automation/ as example" -
 
 ---
 
-### Task 2: Scaffold do `kethflix/` (app factory, erros, helper de teste)
+### Task 2: Scaffold do `kathflix/` (app factory, erros, helper de teste)
 
 **Files:**
-- Create: `kethflix/package.json`, `kethflix/server.js`, `kethflix/src/app.js`, `kethflix/src/errors.js`, `kethflix/src/util.js`, `kethflix/public/uploads/.gitkeep`, `kethflix/test/helpers.js`, `kethflix/test/health.test.js`
-- Modify: `docs/plans/2026-10-29-kethflix-design.md` (troca `better-sqlite3` por `node:sqlite`)
+- Create: `kathflix/package.json`, `kathflix/server.js`, `kathflix/src/app.js`, `kathflix/src/errors.js`, `kathflix/src/util.js`, `kathflix/public/uploads/.gitkeep`, `kathflix/test/helpers.js`, `kathflix/test/health.test.js`
+- Modify: `docs/plans/2026-10-29-kathflix-design.md` (troca `better-sqlite3` por `node:sqlite`)
 
-**Step 1: `kethflix/package.json`**
+**Step 1: `kathflix/package.json`**
 
 ```json
 {
-  "name": "kethflix",
+  "name": "kathflix",
   "version": "1.0.0",
   "private": true,
   "description": "App de treino para automação com Playwright",
@@ -101,7 +101,7 @@ git commit -m "chore: move existing Playwright code to automation/ as example" -
 ```
 
 ```bash
-cd kethflix && npm install && mkdir -p public/uploads data && touch public/uploads/.gitkeep
+cd kathflix && npm install && mkdir -p public/uploads data && touch public/uploads/.gitkeep
 ```
 
 **Step 2: `src/errors.js`**
@@ -163,7 +163,7 @@ const { notFound, errorHandler } = require('./errors');
 function createApp({ dbPath = ':memory:', uploadDir, testApi } = {}) {
   const app = express();
   app.locals.uploadDir = uploadDir || path.join(__dirname, '..', 'public', 'uploads');
-  app.locals.testApi = testApi !== undefined ? testApi : process.env.KETHFLIX_TEST_API !== 'off';
+  app.locals.testApi = testApi !== undefined ? testApi : process.env.KATHFLIX_TEST_API !== 'off';
 
   app.use(express.json());
   app.use('/uploads', express.static(app.locals.uploadDir));
@@ -191,9 +191,9 @@ const port = process.env.PORT || 3000;
 const dataDir = path.join(__dirname, 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 
-const app = createApp({ dbPath: process.env.KETHFLIX_DB || path.join(dataDir, 'kethflix.db') });
+const app = createApp({ dbPath: process.env.KATHFLIX_DB || path.join(dataDir, 'kathflix.db') });
 app.listen(port, () => {
-  console.log(`KethFlix no ar: http://localhost:${port}`);
+  console.log(`KathFlix no ar: http://localhost:${port}`);
   console.log(`Swagger:        http://localhost:${port}/api-docs`);
 });
 ```
@@ -207,7 +207,7 @@ const path = require('node:path');
 const { createApp } = require('../src/app');
 
 async function startApp(options = {}) {
-  const uploadDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kethflix-'));
+  const uploadDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kathflix-'));
   const app = createApp({ dbPath: ':memory:', uploadDir, ...options });
   const server = await new Promise((resolve) => {
     const s = app.listen(0, () => resolve(s));
@@ -244,8 +244,8 @@ async function startApp(options = {}) {
     app,
     call,
     login,
-    admin: () => login('admin@kethflix.com', 'admin123'),
-    user: () => login('user@kethflix.com', 'user123'),
+    admin: () => login('admin@kathflix.com', 'admin123'),
+    user: () => login('user@kathflix.com', 'user123'),
     close: async () => {
       server.closeAllConnections();
       await new Promise((resolve) => server.close(resolve));
@@ -283,17 +283,17 @@ test('rota inexistente devolve { error } 404', async () => {
 
 **Step 8: Rodar**
 
-Run: `cd kethflix && npm test`
+Run: `cd kathflix && npm test`
 Expected: 2 testes PASS.
 
 **Step 9: Atualizar o design**
 
-Em `docs/plans/2026-10-29-kethflix-design.md`, trocar `better-sqlite3` por `node:sqlite (embutido no Node 24)` na linha de Persistência e na lista de dependências do `package.json`.
+Em `docs/plans/2026-10-29-kathflix-design.md`, trocar `better-sqlite3` por `node:sqlite (embutido no Node 24)` na linha de Persistência e na lista de dependências do `package.json`.
 
 **Step 10: Commit**
 
 ```bash
-cd .. && git add kethflix docs && git commit -m "feat(kethflix): scaffold express app, error handling and test helper" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix docs && git commit -m "feat(kathflix): scaffold express app, error handling and test helper" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -301,8 +301,8 @@ cd .. && git add kethflix docs && git commit -m "feat(kethflix): scaffold expres
 ### Task 3: Banco de dados, serviços e seed
 
 **Files:**
-- Create: `kethflix/src/db.js`, `kethflix/src/seed.js`, `kethflix/src/users-service.js`, `kethflix/src/titles-service.js`, `kethflix/test/db.test.js`
-- Modify: `kethflix/src/app.js`
+- Create: `kathflix/src/db.js`, `kathflix/src/seed.js`, `kathflix/src/users-service.js`, `kathflix/src/titles-service.js`, `kathflix/test/db.test.js`
+- Modify: `kathflix/src/app.js`
 
 **Step 1: Teste (falha) `test/db.test.js`**
 
@@ -315,7 +315,7 @@ const { resetToSeed } = require('../src/seed');
 test('openDb cria schema e seed', () => {
   const db = openDb(':memory:');
   const users = db.prepare('SELECT email, role FROM users ORDER BY id').all();
-  assert.deepEqual(users.map((u) => u.email), ['admin@kethflix.com', 'user@kethflix.com']);
+  assert.deepEqual(users.map((u) => u.email), ['admin@kathflix.com', 'user@kathflix.com']);
   assert.equal(users[0].role, 'admin');
   assert.ok(db.prepare('SELECT COUNT(*) AS n FROM titles').get().n >= 6);
   const series = db.prepare("SELECT id FROM titles WHERE type='series'").get();
@@ -478,8 +478,8 @@ const TITLES = [
 ];
 
 function seedAll(db) {
-  createUser(db, { name: 'Admin', email: 'admin@kethflix.com', password: 'admin123', role: 'admin' });
-  createUser(db, { name: 'Usuário Teste', email: 'user@kethflix.com', password: 'user123', role: 'user' });
+  createUser(db, { name: 'Admin', email: 'admin@kathflix.com', password: 'admin123', role: 'admin' });
+  createUser(db, { name: 'Usuário Teste', email: 'user@kathflix.com', password: 'user123', role: 'user' });
   const base = Date.now();
   TITLES.forEach((t, i) =>
     insertTitle(db, { ...t, cover_url: DEFAULT_COVER, episodes: t.episodes || [], created_at: base + i })
@@ -571,7 +571,7 @@ Adicionar `const { openDb } = require('./db');` no topo e, logo após `app.local
 **Step 9: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): sqlite schema, seed and services" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): sqlite schema, seed and services" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -579,8 +579,8 @@ cd .. && git add kethflix && git commit -m "feat(kethflix): sqlite schema, seed 
 ### Task 4: Autenticação (middleware + rotas)
 
 **Files:**
-- Create: `kethflix/src/middleware/auth.js`, `kethflix/src/routes/auth.js`, `kethflix/test/auth.test.js`
-- Modify: `kethflix/src/app.js`
+- Create: `kathflix/src/middleware/auth.js`, `kathflix/src/routes/auth.js`, `kathflix/test/auth.test.js`
+- Modify: `kathflix/src/app.js`
 
 **Step 1: Teste (falha) `test/auth.test.js`**
 
@@ -722,7 +722,7 @@ module.exports = router;
 **Step 7: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): auth endpoints (register, login, logout)" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): auth endpoints (register, login, logout)" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -730,8 +730,8 @@ cd .. && git add kethflix && git commit -m "feat(kethflix): auth endpoints (regi
 ### Task 5: Catálogo (`GET /api/titles`, `GET /api/titles/:id`)
 
 **Files:**
-- Create: `kethflix/src/routes/titles.js`, `kethflix/test/titles.test.js`
-- Modify: `kethflix/src/app.js`
+- Create: `kathflix/src/routes/titles.js`, `kathflix/test/titles.test.js`
+- Modify: `kathflix/src/app.js`
 
 **Step 1: Teste (falha) `test/titles.test.js`**
 
@@ -838,14 +838,14 @@ module.exports = router;
 **Step 5: Rodar** — PASS. **Step 6: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): catalog endpoints with filters and sorting" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): catalog endpoints with filters and sorting" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 6: Favoritos
 
-**Files:** Create `kethflix/src/routes/favorites.js`, `kethflix/test/favorites.test.js`; modify `app.js`.
+**Files:** Create `kathflix/src/routes/favorites.js`, `kathflix/test/favorites.test.js`; modify `app.js`.
 
 **Step 1: Teste (falha)**
 
@@ -919,14 +919,14 @@ module.exports = router;
 **Step 4: Registrar** `app.use('/api/favorites', require('./routes/favorites'));` **Step 5:** `npm test` PASS. **Step 6: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): favorites endpoints" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): favorites endpoints" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 7: Perfil (`/api/me`) e upload de imagem
 
-**Files:** Create `kethflix/src/upload.js`, `kethflix/src/routes/me.js`, `kethflix/test/me.test.js`; modify `app.js`.
+**Files:** Create `kathflix/src/upload.js`, `kathflix/src/routes/me.js`, `kathflix/test/me.test.js`; modify `app.js`.
 
 **Step 1: Teste (falha)**
 
@@ -942,7 +942,7 @@ after(async () => { await ctx.close(); });
 test('GET /api/me devolve o usuário logado', async () => {
   const token = await ctx.user();
   const r = await ctx.call('GET', '/api/me', { token });
-  assert.equal(r.body.email, 'user@kethflix.com');
+  assert.equal(r.body.email, 'user@kathflix.com');
 });
 
 test('PUT /api/me atualiza nome, bio e senha', async () => {
@@ -957,7 +957,7 @@ test('PUT /api/me atualiza nome, bio e senha', async () => {
 
 test('PUT /api/me com e-mail de outro usuário devolve 409', async () => {
   const token = await ctx.login('ana@teste.com', 'novasenha');
-  const r = await ctx.call('PUT', '/api/me', { token, json: { email: 'admin@kethflix.com' } });
+  const r = await ctx.call('PUT', '/api/me', { token, json: { email: 'admin@kathflix.com' } });
   assert.equal(r.status, 409);
 });
 
@@ -1057,14 +1057,14 @@ module.exports = function meRouter(uploadDir) {
 **Step 5: Registrar** `app.use('/api/me', require('./routes/me')(app.locals.uploadDir));` **Step 6:** `npm test` PASS. **Step 7: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): profile endpoints and image upload" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): profile endpoints and image upload" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 8: Admin (títulos e usuários)
 
-**Files:** Create `kethflix/src/routes/admin.js`, `kethflix/test/admin.test.js`; modify `app.js`.
+**Files:** Create `kathflix/src/routes/admin.js`, `kathflix/test/admin.test.js`; modify `app.js`.
 
 **Step 1: Teste (falha)**
 
@@ -1127,7 +1127,7 @@ test('validações de título devolvem 400', async () => {
 test('lista usuários ativos, todos, cria e remove', async () => {
   const active = await ctx.call('GET', '/api/admin/users', { token: admin });
   const emails = active.body.map((u) => u.email).sort();
-  assert.deepEqual(emails, ['admin@kethflix.com', 'user@kethflix.com']);
+  assert.deepEqual(emails, ['admin@kathflix.com', 'user@kathflix.com']);
 
   const created = await ctx.call('POST', '/api/admin/users', { token: admin, json: { name: 'Novo', email: 'novo@teste.com', password: 'abc123', role: 'user' } });
   assert.equal(created.status, 201);
@@ -1210,14 +1210,14 @@ module.exports = function adminRouter(uploadDir) {
 **Step 4: Registrar** `app.use('/api/admin', require('./routes/admin')(app.locals.uploadDir));` **Step 5:** `npm test` PASS. **Step 6: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): admin endpoints for titles and users" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): admin endpoints for titles and users" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 9: Rotas de apoio a testes (`/api/test/*`)
 
-**Files:** Create `kethflix/src/routes/test-support.js`, `kethflix/test/test-support.test.js`; modify `app.js`.
+**Files:** Create `kathflix/src/routes/test-support.js`, `kathflix/test/test-support.test.js`; modify `app.js`.
 
 **Step 1: Teste (falha)**
 
@@ -1301,7 +1301,7 @@ router.delete('/cleanup', (req, res) => {
   if (prefix.length < 3) throw httpError(400, 'prefix deve ter ao menos 3 caracteres');
   const db = req.app.locals.db;
   const like = `${prefix.replace(/[%_]/g, '')}%`;
-  const users = db.prepare("DELETE FROM users WHERE email LIKE ? AND email NOT IN ('admin@kethflix.com','user@kethflix.com')").run(like);
+  const users = db.prepare("DELETE FROM users WHERE email LIKE ? AND email NOT IN ('admin@kathflix.com','user@kathflix.com')").run(like);
   const titles = db.prepare('DELETE FROM titles WHERE title LIKE ?').run(like);
   res.json({ users: users.changes, titles: titles.changes });
 });
@@ -1320,14 +1320,14 @@ Convenção: o prefixo (mínimo 3 caracteres) vale para o início do e-mail do u
 **Step 5:** `npm test` PASS. **Step 6: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): test-support endpoints (reset, seed, cleanup)" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): test-support endpoints (reset, seed, cleanup)" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 10: OpenAPI + Swagger UI + teste de cobertura da doc
 
-**Files:** Create `kethflix/openapi.yaml`, `kethflix/test/openapi.test.js`; modify `app.js`.
+**Files:** Create `kathflix/openapi.yaml`, `kathflix/test/openapi.test.js`; modify `app.js`.
 
 **Step 1: Teste (falha) `test/openapi.test.js`**
 
@@ -1367,36 +1367,36 @@ test('todo endpoint documentado existe na API', async () => {
 
 **Step 2: Rodar** — FAIL (arquivo YAML inexistente).
 
-**Step 3: `kethflix/openapi.yaml`**
+**Step 3: `kathflix/openapi.yaml`**
 
 ```yaml
 openapi: 3.0.3
 info:
-  title: KethFlix API
+  title: KathFlix API
   version: 1.0.0
   description: |
-    API do KethFlix, app de treino para automação com Playwright. Tudo que o frontend faz também pode ser feito aqui,
+    API do KathFlix, app de treino para automação com Playwright. Tudo que o frontend faz também pode ser feito aqui,
     o que permite montar **setup** e **teardown** de testes via API.
 
     ## Como colocar no ar
     ```
-    cd kethflix
+    cd kathflix
     npm install
     npm start
     ```
     App em `http://localhost:3000`, esta documentação em `http://localhost:3000/api-docs`.
-    Variáveis: `PORT` (padrão 3000), `KETHFLIX_DB` (caminho do arquivo SQLite), `KETHFLIX_TEST_API=off` (desliga `/api/test/*`).
+    Variáveis: `PORT` (padrão 3000), `KATHFLIX_DB` (caminho do arquivo SQLite), `KATHFLIX_TEST_API=off` (desliga `/api/test/*`).
 
     ## Como autenticar
-    1. Chame `POST /api/auth/login` com `{"email":"admin@kethflix.com","password":"admin123"}`.
+    1. Chame `POST /api/auth/login` com `{"email":"admin@kathflix.com","password":"admin123"}`.
     2. Copie o `token` da resposta.
     3. Clique em **Authorize** (cadeado) nesta página e cole o token, ou envie o header `Authorization: Bearer <token>`.
 
     ## Usuários do seed
     | Papel | E-mail | Senha |
     |---|---|---|
-    | admin | admin@kethflix.com | admin123 |
-    | user | user@kethflix.com | user123 |
+    | admin | admin@kathflix.com | admin123 |
+    | user | user@kathflix.com | user123 |
 
     ## Erros
     Sempre no formato `{ "error": "mensagem" }` com status 400, 401, 403, 404 ou 409.
@@ -1534,7 +1534,7 @@ paths:
               type: object
               required: [email, password]
               properties: { email: { type: string }, password: { type: string } }
-            example: { email: admin@kethflix.com, password: admin123 }
+            example: { email: admin@kathflix.com, password: admin123 }
       responses:
         '200':
           description: Login realizado
@@ -1759,7 +1759,7 @@ paths:
     post:
       tags: [Apoio a testes]
       summary: Voltar o banco ao seed inicial
-      description: Sem autenticação. Indisponível se `KETHFLIX_TEST_API=off`.
+      description: Sem autenticação. Indisponível se `KATHFLIX_TEST_API=off`.
       security: []
       responses:
         '200': { description: Banco resetado, content: { application/json: { schema: { type: object, properties: { status: { type: string, example: reset } } } } } }
@@ -1817,7 +1817,7 @@ paths:
   const swaggerUi = require('swagger-ui-express');
   const specText = fs.readFileSync(path.join(__dirname, '..', 'openapi.yaml'), 'utf8');
   app.get('/api-docs/openapi.yaml', (req, res) => res.type('text/yaml').send(specText));
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(YAML.parse(specText), { customSiteTitle: 'KethFlix API' }));
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(YAML.parse(specText), { customSiteTitle: 'KathFlix API' }));
 ```
 
 **Step 5: Rodar** — `npm test` → PASS. Se algum endpoint do YAML não existir, o teste aponta qual.
@@ -1825,14 +1825,14 @@ paths:
 **Step 6: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): OpenAPI spec and Swagger UI at /api-docs" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): OpenAPI spec and Swagger UI at /api-docs" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 11: Frontend base (CSS, `common.js`, capa padrão) + login e cadastro
 
-**Files (todos em `kethflix/public/`):** `css/styles.css`, `js/common.js`, `img/cover-default.svg`, `login.html`, `js/login.js`, `register.html`, `js/register.js`
+**Files (todos em `kathflix/public/`):** `css/styles.css`, `js/common.js`, `img/cover-default.svg`, `login.html`, `js/login.js`, `register.html`, `js/register.js`
 
 **Step 1: `img/cover-default.svg`**
 
@@ -1840,7 +1840,7 @@ cd .. && git add kethflix && git commit -m "feat(kethflix): OpenAPI spec and Swa
 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
   <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b20710"/><stop offset="1" stop-color="#141414"/></linearGradient></defs>
   <rect width="300" height="450" fill="url(#g)"/>
-  <text x="150" y="235" font-family="Arial,sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">KETHFLIX</text>
+  <text x="150" y="235" font-family="Arial,sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">KATHFLIX</text>
 </svg>
 ```
 
@@ -1901,8 +1901,8 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
 
 ```js
 (function () {
-  const TOKEN_KEY = 'kethflix.token';
-  const USER_KEY = 'kethflix.user';
+  const TOKEN_KEY = 'kathflix.token';
+  const USER_KEY = 'kathflix.user';
 
   const KF = {
     getToken: () => localStorage.getItem(TOKEN_KEY),
@@ -1945,7 +1945,7 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
     alertsEnabled() {
       const q = new URLSearchParams(location.search).get('alerts');
       if (q === 'off') return false;
-      return localStorage.getItem('kethflix.alerts') !== 'off';
+      return localStorage.getItem('kathflix.alerts') !== 'off';
     },
 
     youtubeEmbed(url) {
@@ -1964,7 +1964,7 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
       const el = document.getElementById('nav');
       el.innerHTML = `
         <header class="nav">
-          <a class="logo" href="/home.html" id="nav-logo" data-testid="nav-logo">KETHFLIX</a>
+          <a class="logo" href="/home.html" id="nav-logo" data-testid="nav-logo">KATHFLIX</a>
           <nav>
             <a href="/home.html" id="nav-home" data-testid="nav-home" class="${active === 'home' ? 'active' : ''}">Início</a>
             <a href="/profile.html" id="nav-profile" data-testid="nav-profile" class="${active === 'profile' ? 'active' : ''}">Perfil</a>
@@ -1983,7 +1983,7 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
     renderFooter() {
       const f = document.createElement('footer');
       f.className = 'site-footer';
-      f.textContent = '© KethFlix — projeto de treinamento de automação';
+      f.textContent = '© KathFlix — projeto de treinamento de automação';
       document.body.appendChild(f);
     },
   };
@@ -2000,12 +2000,12 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KethFlix - Entrar</title>
+  <title>KathFlix - Entrar</title>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="auth-page">
   <main class="auth-box">
-    <h1 class="logo">KETHFLIX</h1>
+    <h1 class="logo">KATHFLIX</h1>
     <form id="login-form" novalidate>
       <h2>Entrar</h2>
       <div id="login-success" class="msg success" role="status" data-testid="login-success" hidden></div>
@@ -2029,8 +2029,8 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
 ```js
 (function () {
   const params = new URLSearchParams(location.search);
-  if (params.get('alerts') === 'off') localStorage.setItem('kethflix.alerts', 'off');
-  if (params.get('alerts') === 'on') localStorage.removeItem('kethflix.alerts');
+  if (params.get('alerts') === 'off') localStorage.setItem('kathflix.alerts', 'off');
+  if (params.get('alerts') === 'on') localStorage.removeItem('kathflix.alerts');
 
   if (KF.getToken() && KF.getUser()) { location.href = '/home.html'; return; }
 
@@ -2047,8 +2047,8 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
       const { token, user } = await KF.api('/auth/login', { method: 'POST', json: { email, password } });
       KF.setSession(token, user);
       if (KF.alertsEnabled()) {
-        sessionStorage.setItem('kethflix.promo', '1');
-        alert(`Bem-vindo ao KethFlix, ${user.name}!`);
+        sessionStorage.setItem('kathflix.promo', '1');
+        alert(`Bem-vindo ao KathFlix, ${user.name}!`);
       }
       location.href = '/home.html';
     } catch (ex) {
@@ -2058,12 +2058,12 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
 })();
 ```
 
-**Step 6: `register.html`** (mesmo `<head>` do login, título `KethFlix - Cadastro`)
+**Step 6: `register.html`** (mesmo `<head>` do login, título `KathFlix - Cadastro`)
 
 ```html
 <body class="auth-page">
   <main class="auth-box">
-    <h1 class="logo">KETHFLIX</h1>
+    <h1 class="logo">KATHFLIX</h1>
     <form id="register-form" novalidate>
       <h2>Criar conta</h2>
       <div id="register-error" class="msg error" role="alert" data-testid="register-error" hidden></div>
@@ -2111,23 +2111,23 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
 **Step 7: Verificar manualmente**
 
 ```bash
-cd kethflix && npm start
+cd kathflix && npm start
 ```
 Abrir `http://localhost:3000`: deve redirecionar ao login. Cadastrar um usuário, voltar ao login, ver a mensagem de sucesso, e logar errado (ver erro inline). (O login certo vai dar 404 em `/home.html` até a Task 12.)
 
 **Step 8: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): frontend base, login and register pages" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): frontend base, login and register pages" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 12: Tela inicial (`home.html`)
 
-**Files:** `kethflix/public/home.html`, `kethflix/public/js/home.js`
+**Files:** `kathflix/public/home.html`, `kathflix/public/js/home.js`
 
-**Step 1: `home.html`** (mesmo `<head>`, título `KethFlix - Início`)
+**Step 1: `home.html`** (mesmo `<head>`, título `KathFlix - Início`)
 
 ```html
 <body>
@@ -2211,7 +2211,7 @@ O hero e o footer não têm `data-testid` (requisito 10).
     const t = allTitles.find((x) => x.is_new) || allTitles[0];
     $('hero').innerHTML = t
       ? `<h2>${KF.esc(t.title)}</h2><p>${KF.esc(t.description)}</p><div><a class="btn" href="/watch.html?id=${t.id}">Assistir</a></div>`
-      : '<h2>KethFlix</h2>';
+      : '<h2>KathFlix</h2>';
   }
 
   async function load(withSkeleton) {
@@ -2234,8 +2234,8 @@ O hero e o footer não têm `data-testid` (requisito 10).
   }
 
   // banner pós-login
-  if (KF.alertsEnabled() && sessionStorage.getItem('kethflix.promo')) {
-    sessionStorage.removeItem('kethflix.promo');
+  if (KF.alertsEnabled() && sessionStorage.getItem('kathflix.promo')) {
+    sessionStorage.removeItem('kathflix.promo');
     $('promo-banner').hidden = false;
   }
   const closeBanner = () => { $('promo-banner').hidden = true; };
@@ -2256,19 +2256,19 @@ O hero e o footer não têm `data-testid` (requisito 10).
 })();
 ```
 
-**Step 3: Verificar manualmente** — `npm start`; logar como `user@kethflix.com`. Conferir: alert nativo, banner com 3 botões, skeleton de ~0,7 s, 3 carrosséis, filtro de categoria, busca, ordenação, favoritar move o card para "Meus Favoritos". Testar também `http://localhost:3000/login.html?alerts=off`: sem alert nem banner.
+**Step 3: Verificar manualmente** — `npm start`; logar como `user@kathflix.com`. Conferir: alert nativo, banner com 3 botões, skeleton de ~0,7 s, 3 carrosséis, filtro de categoria, busca, ordenação, favoritar move o card para "Meus Favoritos". Testar também `http://localhost:3000/login.html?alerts=off`: sem alert nem banner.
 
 **Step 4: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): home page with catalog, filters, favorites and post-login alerts" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): home page with catalog, filters, favorites and post-login alerts" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 13: Tela de assistir (`watch.html`)
 
-**Files:** `kethflix/public/watch.html`, `kethflix/public/js/watch.js`
+**Files:** `kathflix/public/watch.html`, `kathflix/public/js/watch.js`
 
 **Step 1: `watch.html`**
 
@@ -2357,14 +2357,14 @@ cd .. && git add kethflix && git commit -m "feat(kethflix): home page with catal
 **Step 4: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): watch page with youtube embed and episodes" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): watch page with youtube embed and episodes" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 14: Perfil (`profile.html`)
 
-**Files:** `kethflix/public/profile.html`, `kethflix/public/js/profile.js`
+**Files:** `kathflix/public/profile.html`, `kathflix/public/js/profile.js`
 
 **Step 1: `profile.html`**
 
@@ -2449,14 +2449,14 @@ cd .. && git add kethflix && git commit -m "feat(kethflix): watch page with yout
 **Step 4: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): profile page" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): profile page" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 15: Tela de administração (`admin.html`)
 
-**Files:** `kethflix/public/admin.html`, `kethflix/public/js/admin.js`
+**Files:** `kathflix/public/admin.html`, `kathflix/public/js/admin.js`
 
 **Step 1: `admin.html`**
 
@@ -2669,12 +2669,12 @@ cd .. && git add kethflix && git commit -m "feat(kethflix): profile page" -m "Co
 })();
 ```
 
-**Step 3: Verificar manualmente** — logar como admin (`admin@kethflix.com`): criar um filme com URL de imagem, uma série com 2 episódios e um filme com upload; remover um título via modal (Cancelar não remove; Remover remove); aba Usuários: ver os ativos, marcar "mostrar todos", remover um usuário cadastrado; o botão do próprio admin fica desabilitado. Logar como `user@kethflix.com` e abrir `/admin.html` deve redirecionar à home (o link "Admin" também não aparece).
+**Step 3: Verificar manualmente** — logar como admin (`admin@kathflix.com`): criar um filme com URL de imagem, uma série com 2 episódios e um filme com upload; remover um título via modal (Cancelar não remove; Remover remove); aba Usuários: ver os ativos, marcar "mostrar todos", remover um usuário cadastrado; o botão do próprio admin fica desabilitado. Logar como `user@kathflix.com` e abrir `/admin.html` deve redirecionar à home (o link "Admin" também não aparece).
 
 **Step 4: Commit**
 
 ```bash
-cd .. && git add kethflix && git commit -m "feat(kethflix): admin page for titles and users" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+cd .. && git add kathflix && git commit -m "feat(kathflix): admin page for titles and users" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -2693,9 +2693,9 @@ cd automation && npm install && npx playwright install chromium
 **Step 2: Subir a app em background**
 
 ```bash
-cd ../kethflix && KETHFLIX_DB=":memory:" PORT=3100 node server.js
+cd ../kathflix && KATHFLIX_DB=":memory:" PORT=3100 node server.js
 ```
-(Rodar em segundo plano. `KETHFLIX_DB=:memory:` mantém a base limpa.)
+(Rodar em segundo plano. `KATHFLIX_DB=:memory:` mantém a base limpa.)
 
 **Step 3: Script `<scratchpad>/smoke.spec.ts`** (mover para `automation/tests/` apenas durante a execução e apagar depois, ou rodar com `--config` apontando para o scratchpad)
 
@@ -2703,9 +2703,9 @@ cd ../kethflix && KETHFLIX_DB=":memory:" PORT=3100 node server.js
 import { test, expect } from '@playwright/test';
 const BASE = 'http://localhost:3100';
 
-test('fluxo completo do KethFlix', async ({ page, request }) => {
+test('fluxo completo do KathFlix', async ({ page, request }) => {
   // setup via API
-  const login = await request.post(`${BASE}/api/auth/login`, { data: { email: 'admin@kethflix.com', password: 'admin123' } });
+  const login = await request.post(`${BASE}/api/auth/login`, { data: { email: 'admin@kathflix.com', password: 'admin123' } });
   const { token } = await login.json();
   const created = await request.post(`${BASE}/api/admin/titles`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -2717,11 +2717,11 @@ test('fluxo completo do KethFlix', async ({ page, request }) => {
   let dialogText = '';
   page.on('dialog', async (d) => { dialogText = d.message(); await d.accept(); });
   await page.goto(`${BASE}/login.html`);
-  await page.getByTestId('login-email').fill('user@kethflix.com');
+  await page.getByTestId('login-email').fill('user@kathflix.com');
   await page.getByTestId('login-password').fill('user123');
   await page.getByTestId('login-submit').click();
   await expect(page).toHaveURL(/home\.html/);
-  expect(dialogText).toBe('Bem-vindo ao KethFlix, Usuário Teste!');
+  expect(dialogText).toBe('Bem-vindo ao KathFlix, Usuário Teste!');
 
   // banner pós-login
   await expect(page.getByTestId('promo-text')).toHaveText('Novo episódio disponível! Deseja ver agora?');
@@ -2751,7 +2751,7 @@ test('fluxo completo do KethFlix', async ({ page, request }) => {
   // admin: remover o título com modal
   await page.getByTestId('nav-logout').click();
   await page.goto(`${BASE}/login.html?alerts=off`);
-  await page.getByTestId('login-email').fill('admin@kethflix.com');
+  await page.getByTestId('login-email').fill('admin@kathflix.com');
   await page.getByTestId('login-password').fill('admin123');
   await page.getByTestId('login-submit').click();
   await page.getByTestId('nav-admin').click();
@@ -2778,14 +2778,14 @@ Parar o processo em background e remover qualquer cópia temporária do script d
 
 ### Task 17: Coleção Postman e exemplo de hooks (setup/teardown)
 
-**Files:** `kethflix/postman/KethFlix.postman_collection.json`, `kethflix/examples/api-client.ts`
+**Files:** `kathflix/postman/KathFlix.postman_collection.json`, `kathflix/examples/api-client.ts`
 
 **Step 1: Coleção Postman** (Collection v2.1; variáveis `baseUrl` e `token`)
 
 ```json
 {
   "info": {
-    "name": "KethFlix API",
+    "name": "KathFlix API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": "Rode primeiro 'Auth / Login (admin)': o script grava o token em {{token}}. As demais requisições usam esse token."
   },
@@ -2803,12 +2803,12 @@ Parar o processo em background e remover qualquer cópia temporária do script d
         {
           "name": "Login (admin)",
           "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"] } }],
-          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@kethflix.com\",\n  \"password\": \"admin123\"\n}" } }
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@kathflix.com\",\n  \"password\": \"admin123\"\n}" } }
         },
         {
           "name": "Login (user)",
           "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"] } }],
-          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@kethflix.com\",\n  \"password\": \"user123\"\n}" } }
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@kathflix.com\",\n  \"password\": \"user123\"\n}" } }
         },
         {
           "name": "Register",
@@ -2877,7 +2877,7 @@ Parar o processo em background e remover qualquer cópia temporária do script d
 **Step 2: Validar o JSON**
 
 ```bash
-node -e "JSON.parse(require('fs').readFileSync('kethflix/postman/KethFlix.postman_collection.json','utf8')); console.log('ok')"
+node -e "JSON.parse(require('fs').readFileSync('kathflix/postman/KathFlix.postman_collection.json','utf8')); console.log('ok')"
 ```
 Expected: `ok`
 
@@ -2885,15 +2885,15 @@ Expected: `ok`
 
 ```ts
 /**
- * Cliente de API do KethFlix para usar em hooks do Playwright (setup/teardown).
+ * Cliente de API do KathFlix para usar em hooks do Playwright (setup/teardown).
  * Exige Node 18+ (fetch global). Ajuste BASE se a app não estiver em localhost:3000.
  *
  * Exemplo de uso em um teste:
  *
  *   import { test } from '@playwright/test';
- *   import { KethflixApi } from '../examples/api-client';
+ *   import { KathflixApi } from '../examples/api-client';
  *
- *   const api = new KethflixApi();
+ *   const api = new KathflixApi();
  *   test.beforeEach(async () => {
  *     await api.seed({ users: [{ name: 'QA', email: 'qa-ana@teste.com', password: 'abc123' }] });
  *   });
@@ -2901,11 +2901,11 @@ Expected: `ok`
  *     await api.cleanup('qa-');
  *   });
  */
-const BASE = process.env.KETHFLIX_URL ?? 'http://localhost:3000';
+const BASE = process.env.KATHFLIX_URL ?? 'http://localhost:3000';
 
 type Json = Record<string, unknown>;
 
-export class KethflixApi {
+export class KathflixApi {
   constructor(private base: string = BASE) {}
 
   private async request<T = any>(method: string, path: string, opts: { token?: string; json?: Json } = {}): Promise<T> {
@@ -2937,7 +2937,7 @@ export class KethflixApi {
     return r.token;
   }
 
-  loginAdmin() { return this.login('admin@kethflix.com', 'admin123'); }
+  loginAdmin() { return this.login('admin@kathflix.com', 'admin123'); }
 
   createUser(adminToken: string, user: Json) { return this.request('POST', '/api/admin/users', { token: adminToken, json: user }); }
   deleteUser(adminToken: string, id: number) { return this.request('DELETE', `/api/admin/users/${id}`, { token: adminToken }); }
@@ -2950,14 +2950,14 @@ export class KethflixApi {
 **Step 4: Commit**
 
 ```bash
-git add kethflix && git commit -m "docs(kethflix): postman collection and API client example for hooks" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+git add kathflix && git commit -m "docs(kathflix): postman collection and API client example for hooks" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 ```
 
 ---
 
 ### Task 18: README, verificação final e push
 
-**Files:** Create `README.md` (raiz), `kethflix/README.md`
+**Files:** Create `README.md` (raiz), `kathflix/README.md`
 
 **Step 1: `README.md` da raiz**
 
@@ -2968,22 +2968,22 @@ Material de treinamento de automação com Playwright.
 
 | Pasta | O que é |
 |---|---|
-| `kethflix/` | App **KethFlix** (frontend + API) usada como alvo dos testes. |
-| `automation/` | Projeto Playwright **de exemplo** (Page Objects, specs, helper de API). Aponta para o saucedemo e serve de referência de estilo para automatizar o KethFlix. |
-| `docs/plans/` | Design e plano de implementação do KethFlix. |
+| `kathflix/` | App **KathFlix** (frontend + API) usada como alvo dos testes. |
+| `automation/` | Projeto Playwright **de exemplo** (Page Objects, specs, helper de API). Aponta para o saucedemo e serve de referência de estilo para automatizar o KathFlix. |
+| `docs/plans/` | Design e plano de implementação do KathFlix. |
 
-Comece por `kethflix/README.md`.
+Comece por `kathflix/README.md`.
 ```
 
-**Step 2: `kethflix/README.md`**
+**Step 2: `kathflix/README.md`**
 
 ```markdown
-# KethFlix
+# KathFlix
 
 App estilo Netflix para treinos de automação. Tudo que a tela faz também é possível via API (setup/teardown com hooks).
 
 ## Como subir
-    cd kethflix
+    cd kathflix
     npm install
     npm start
 
@@ -2991,13 +2991,13 @@ App estilo Netflix para treinos de automação. Tudo que a tela faz também é p
 - Swagger (API): http://localhost:3000/api-docs
 - Requer Node 22.13+ (usa `node:sqlite`). O aviso "ExperimentalWarning: SQLite" é esperado.
 
-Variáveis: `PORT` (3000), `KETHFLIX_DB` (arquivo SQLite; `:memory:` para base descartável), `KETHFLIX_TEST_API=off` (desliga `/api/test/*`).
+Variáveis: `PORT` (3000), `KATHFLIX_DB` (arquivo SQLite; `:memory:` para base descartável), `KATHFLIX_TEST_API=off` (desliga `/api/test/*`).
 
 ## Usuários do seed
 | Papel | E-mail | Senha |
 |---|---|---|
-| admin | admin@kethflix.com | admin123 |
-| user | user@kethflix.com | user123 |
+| admin | admin@kathflix.com | admin123 |
+| user | user@kathflix.com | user123 |
 
 ## Telas
 `/login.html`, `/register.html`, `/home.html`, `/watch.html?id=`, `/profile.html`, `/admin.html` (só admin).
@@ -3023,7 +3023,7 @@ App de treino: senhas com hash, mas sem HTTPS, sem rate limit e com rotas de tes
 **Step 3: Verificação final**
 
 ```bash
-cd kethflix && npm test
+cd kathflix && npm test
 ```
 Expected: todos os testes PASS (health, db, auth, titles, favorites, me, admin, test-support, openapi), 0 falhas.
 
