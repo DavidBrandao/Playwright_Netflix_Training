@@ -9,8 +9,9 @@ function parseTitleInput(body, coverFromFile) {
   const title = String(body.title || '').trim();
   if (!title) throw httpError(400, 'title é obrigatório');
   if (!GENRES.includes(body.genre)) throw httpError(400, `genre inválido. Use: ${GENRES.join(', ')}`);
-  const year = body.year === undefined || body.year === '' || body.year === null ? null : Number(body.year);
+  const year = body.year === undefined || body.year === null || String(body.year).trim() === '' ? null : Number(body.year);
   if (year !== null && !Number.isInteger(year)) throw httpError(400, 'year deve ser um número inteiro');
+  if (year !== null && (year < 1888 || year > 2100)) throw httpError(400, 'year deve estar entre 1888 e 2100');
 
   const out = {
     type,

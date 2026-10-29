@@ -79,3 +79,16 @@ test('requisição que falha após o upload não deixa arquivo órfão', async (
   assert.equal((await ctx.call('PUT', '/api/me', { token: adminToken, form: me })).status, 409);
   assert.equal(fs.readdirSync(dir).length, before);
 });
+
+test('year: em branco vira null; fora de 1888..2100 é 400', async () => {
+  const post = (year) => ctx.call('POST', '/api/admin/titles', {
+    token: adminToken,
+    json: { type: 'movie', title: `Ano ${year}`, genre: 'Drama', video_url: 'https://youtu.be/aqz-KE-bpKQ', year },
+  });
+  const blank = await post('   ');
+  assert.equal(blank.status, 201);
+  assert.equal(blank.body.year, null);
+  for (const y of [0, 1887, 2101, -5]) assert.equal((await post(y)).status, 400, String(y));
+  assert.equal((await post(1888)).status, 201);
+  assert.equal((await post(2100)).status, 201);
+});
