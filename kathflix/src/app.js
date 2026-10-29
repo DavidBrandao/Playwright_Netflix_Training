@@ -1,11 +1,13 @@
 const path = require('node:path');
 const express = require('express');
 const { notFound, errorHandler } = require('./errors');
+const { openDb } = require('./db');
 
 function createApp({ dbPath = ':memory:', uploadDir, testApi } = {}) {
   const app = express();
   app.locals.uploadDir = uploadDir || path.join(__dirname, '..', 'public', 'uploads');
   app.locals.testApi = testApi !== undefined ? testApi : process.env.KATHFLIX_TEST_API !== 'off';
+  app.locals.db = openDb(dbPath);
 
   app.use(express.json());
   app.use('/uploads', express.static(app.locals.uploadDir));
