@@ -7,8 +7,8 @@ const router = express.Router();
 router.use(auth);
 
 const ORDERS = {
-  az: 'title COLLATE NOCASE ASC',
-  year: 'year DESC',
+  az: 'title COLLATE NOCASE ASC, id DESC',
+  year: 'year DESC, id DESC',
   recent: 'created_at DESC, id DESC',
 };
 
@@ -18,13 +18,17 @@ function favoriteSet(db, userId) {
 }
 
 router.get('/', (req, res) => {
-  const { q, genre, new: isNew, sort } = req.query;
+  const str = (v) => (typeof v === 'string' ? v : undefined);
+  const q = str(req.query.q);
+  const genre = str(req.query.genre);
+  const isNew = str(req.query.new);
+  const sort = str(req.query.sort);
   const where = [];
   const params = [];
-  if (q) { where.push('title LIKE ?'); params.push(`%${q}%`); }
+  if (q) { where.push("title LIKE ? ESCAPE '\\'"); params.push(`%${q.replace(/[\\%_]/g, '\\$&')}%`); }
   if (genre && genre !== 'Todas') { where.push('genre = ?'); params.push(genre); }
   if (isNew === 'true') where.push('is_new = 1');
-  const order = ORDERS[sort] || ORDERS.recent;
+  const order = Object.hasOwn(ORDERS, sort) ? ORDERS[sort] : ORDERS.recent;
   const sql = `SELECT * FROM titles ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY ${order}`;
   const db = req.app.locals.db;
   const favs = favoriteSet(db, req.user.id);
