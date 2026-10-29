@@ -11,7 +11,7 @@ Criar o **KathFlix**, uma app estilo Netflix (frontend + API) para a professora 
 | Tema | Decisão |
 |---|---|
 | Stack | Node + Express, frontend em HTML/CSS/JS puro (sem build) |
-| Persistência | SQLite em arquivo (`node:sqlite` (embutido no Node 24)) |
+| Persistência | SQLite em arquivo via `node:sqlite` (embutido no Node 24) |
 | Acesso | Login + cadastro público; papéis `user` e `admin` |
 | Autenticação | Token Bearer (tabela `sessions`), guardado no `localStorage` no frontend |
 | Repositório | Raiz = `Modulo2/scripts`; remoto `https://github.com/DavidBrandao/Playwright_Netflix_Training.git` |
@@ -43,7 +43,7 @@ scripts/                         <- raiz do git
     └── data/kathflix.db         <- ignorado no git
 ```
 
-- Um único processo (`npm start`) serve a API em `/api/*`, as telas em `/` e o Swagger em `/api-docs` (porta 3000).
+- Um único processo (`npm start`) serve a API em `/api/*`, as telas em `/` e o Swagger em `/api-docs` (porta padrão 3000, configurável via `PORT`).
 - `automation/` continua apontando para o saucedemo; adaptá-lo ao KathFlix fica como exercício para a turma.
 
 ## 2. Modelo de dados
