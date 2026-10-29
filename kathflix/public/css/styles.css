@@ -65,3 +65,4 @@ th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-s
 @keyframes cat-rise { from { transform:translateY(100vh); } to { transform:translateY(0); } }
 @media (prefers-reduced-motion:reduce) { .cat-popup { animation:none; } }
 .forgot { display:inline-block; margin-top:10px; font-size:.85rem; color:var(--muted); }
+.cats-head { display:flex; align-items:center; justify-content:space-between; gap:16px; }

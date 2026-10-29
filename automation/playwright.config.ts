@@ -26,7 +26,10 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
+    baseURL: process.env.KATHFLIX_URL ?? 'http://localhost:3000',
+
+    /* Screenshot automático quando o teste falha (aparece no relatório HTML). */
+    screenshot: 'only-on-failure',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -71,9 +74,11 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  /* Sobe o KathFlix se ele ainda não estiver no ar (se já estiver, reaproveita). */
+  webServer: {
+    command: 'npm start',
+    cwd: '../kathflix',
+    url: (process.env.KATHFLIX_URL ?? 'http://localhost:3000') + '/api/health',
+    reuseExistingServer: true,
+  },
 });

@@ -1,44 +1,77 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/login.page';
-import { Navbar } from '../pages/components/navbar';
+import { HomePage } from '../pages/home.page';
+import { LuckyCatPopup } from '../pages/lucky-cat.page';
+import { KathflixApi } from '../api_helper/kathflix_api';
+
+// Prefixo único por worker: o cleanup do afterAll só apaga o que este arquivo criou.
+const PREFIXO = `autologin-${Date.now()}-`
+const SENHA = 'Senha123'
 
 let loginPage: LoginPage
-let navbar: Navbar
+let homePage: HomePage
+let gato: LuckyCatPopup
+let api: KathflixApi
+let emailUsuario: string
+
+test.beforeAll(async () => {
+    // Arrange (via API): cria o usuário usado nos testes
+    api = new KathflixApi()
+    emailUsuario = await api.criarUsuario(PREFIXO, SENHA)
+})
+
+test.afterAll(async () => {
+    // Teardown (via API): remove o que foi criado
+    await api.limparPorPrefixo(PREFIXO)
+})
 
 test.beforeEach(async ({page}) => {
     loginPage = new LoginPage(page)
-    navbar = new Navbar(page)
+    homePage = new HomePage(page)
+    gato = new LuckyCatPopup(page)
     // Arrange
-    loginPage.acessarSite()
+    await loginPage.acessarSite()
 })
 
 test('login com sucesso', async({page}) => {
     // Act
-    loginPage.login("standard_user", "secret_sauce")
+    await loginPage.login(emailUsuario, SENHA)
     // Assert
-    await expect(navbar.cartButton).toBeVisible()
+    await expect(page).toHaveURL(/home.html/)
+    await expect(homePage.username).toHaveText('Usuario Automacao')
 })
 
-test('tentativa de login com senha errada', async({page}) => {
+test('tentativa de login com senha errada', async() => {
     // Act
-    loginPage.login("standard_user", "secret_sauces")
+    await loginPage.login(emailUsuario, 'SenhaErrada')
     // Assert
-    await expect(loginPage.alert).toHaveText('Epic sadface: Username and password do not match any user in this service')
+    await expect(loginPage.error).toHaveText('E-mail ou senha inválidos')
 })
 
-test('tentativa de login com user errado', async({page}) => {
+test('tentativa de login com user errado', async() => {
+    await loginPage.login('naoexiste@kathflix.com', SENHA)
+    await expect(loginPage.error).toHaveText('E-mail ou senha inválidos')
+})
+
+test('tentativa de login sem e-mail', async() => {
+    await loginPage.login('', SENHA)
+    await expect(loginPage.error).toHaveText('Informe e-mail e senha')
+})
+
+test('tentativa de login sem password', async() => {
+    await loginPage.login(emailUsuario, '')
+    await expect(loginPage.error).toHaveText('Informe e-mail e senha')
+})
+
+test('bug 1: "Esqueci a senha" sem e-mail mostra o gato da sorte', async({}, testInfo) => {
     // Act
-    loginPage.login("standard_userss", "secret_sauce")
+    await loginPage.esqueciASenha()
     // Assert
-    await expect(loginPage.alert).toHaveText('Epic sadface: Username and password do not match any user in this service')
-})
-
-test('tentativa de login sem username', async({page}) => {
-    loginPage.login('', 'secret_sauce')
-    await expect(loginPage.alert).toHaveText('Epic sadface: Username is required')
-})
-
-test('tentativa de login sem password', async({page}) => {
-    loginPage.login('standard_user', '')
-    await expect(loginPage.alert).toHaveText('Epic sadface: Password is required')
+    await expect(gato.popup).toBeVisible()
+    expect(await gato.imagemCarregada()).toBe(true)
+    await expect(gato.text).toHaveText('Você encontrou um bug gato da sorte.')
+    await expect(gato.strikethrough).toHaveText('bug')
+    await expect(gato.remaining).toHaveText('Você achou o gato 1, faltam 2')
+    // guarda a imagem do gato no relatório
+    await testInfo.attach('gato-da-sorte-1', { body: await gato.image.screenshot(), contentType: 'image/png' })
 })

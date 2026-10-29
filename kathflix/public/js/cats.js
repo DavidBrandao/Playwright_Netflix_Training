@@ -22,6 +22,13 @@
     grid.innerHTML = html;
   }
 
+  document.getElementById('cats-reset').addEventListener('click', async () => {
+    try {
+      await KF.api('/me/cats', { method: 'DELETE' });
+      render(await KF.cats.load());
+    } catch (ex) { grid.textContent = ex.message; }
+  });
+
   KF.cats.load().then(render).catch((ex) => {
     grid.textContent = ex.message;
   });
