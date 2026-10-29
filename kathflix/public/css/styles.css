@@ -1,0 +1,48 @@
+:root { --bg:#141414; --panel:#1f1f1f; --red:#e50914; --text:#f3f3f3; --muted:#a3a3a3; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font-family: Arial, Helvetica, sans-serif; }
+a { color: inherit; }
+[hidden] { display:none !important; }
+.logo { color:var(--red); font-weight:bold; letter-spacing:2px; font-size:1.6rem; text-decoration:none; }
+.nav { display:flex; align-items:center; gap:24px; padding:14px 32px; background:#000; position:sticky; top:0; z-index:5; }
+.nav nav { display:flex; gap:18px; flex:1; }
+.nav nav a { text-decoration:none; color:var(--muted); } .nav nav a:hover, .nav nav a.active { color:#fff; }
+button, .btn { background:var(--red); color:#fff; border:0; border-radius:4px; padding:9px 16px; cursor:pointer; font-size:.95rem; text-decoration:none; display:inline-block; }
+button.secondary { background:#333; } button.danger { background:#7a1016; }
+button:disabled { opacity:.4; cursor:not-allowed; }
+input, select, textarea { width:100%; padding:10px; border-radius:4px; border:1px solid #444; background:#2b2b2b; color:#fff; font-size:.95rem; }
+label { display:block; margin:12px 0 4px; color:var(--muted); font-size:.85rem; }
+.auth-page { display:flex; justify-content:center; align-items:center; min-height:100vh; background:radial-gradient(circle at top,#3a0a0d,#141414 60%); }
+.auth-box { width:100%; max-width:380px; padding:32px; background:rgba(0,0,0,.8); border-radius:8px; }
+.auth-box h1 { text-align:center; margin-top:0; } .auth-box button[type=submit] { width:100%; margin-top:20px; }
+.auth-box .alt { text-align:center; margin-top:16px; color:var(--muted); font-size:.9rem; }
+.msg { padding:10px 12px; border-radius:4px; margin:12px 0; font-size:.9rem; }
+.msg.error { background:#5c1b1f; } .msg.success { background:#14532d; } .msg.info { background:#1e3a5f; }
+main { padding:24px 32px; max-width:1200px; margin:0 auto; }
+.hero { min-height:240px; border-radius:8px; padding:40px; margin-bottom:24px; display:flex; flex-direction:column; justify-content:flex-end; background:linear-gradient(90deg,#000c,#0000),url('/img/cover-default.svg') center/cover; }
+.hero h2 { font-size:2.2rem; margin:0 0 8px; }
+.filters { display:grid; grid-template-columns:2fr 1fr 1fr; gap:12px; margin-bottom:8px; }
+section h2 { margin:28px 0 12px; }
+.row { display:flex; gap:14px; overflow-x:auto; padding-bottom:8px; }
+.card { flex:0 0 160px; background:var(--panel); border-radius:6px; overflow:hidden; padding-bottom:10px; }
+.card img { width:100%; aspect-ratio:2/3; object-fit:cover; display:block; }
+.card-title { font-size:.95rem; margin:8px 10px 2px; } .card-meta { color:var(--muted); font-size:.75rem; margin:0 10px 8px; }
+.card .fav-btn { margin:0 10px; width:calc(100% - 20px); padding:6px; font-size:.8rem; }
+.skeleton-card { flex:0 0 160px; height:300px; border-radius:6px; background:linear-gradient(90deg,#222,#333,#222); background-size:200% 100%; animation:sk 1.2s infinite; }
+@keyframes sk { to { background-position:-200% 0; } }
+.promo { display:flex; align-items:center; gap:12px; background:#1e3a5f; padding:12px 32px; }
+.promo span { flex:1; }
+.player { width:100%; aspect-ratio:16/9; border:0; border-radius:8px; background:#000; }
+.episodes { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.episodes button.active { background:#fff; color:#000; }
+table { width:100%; border-collapse:collapse; margin-top:12px; }
+th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #333; font-size:.9rem; }
+.tabs { display:flex; gap:8px; margin-bottom:16px; } .tabs button[aria-selected=true] { background:#fff; color:#000; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; } .form-grid .full { grid-column:1/-1; }
+.episode-row { display:grid; grid-template-columns:1fr 2fr; gap:8px; margin-bottom:6px; }
+.modal-bg { position:fixed; inset:0; background:#000a; display:flex; align-items:center; justify-content:center; z-index:10; }
+.modal { background:var(--panel); padding:24px; border-radius:8px; max-width:360px; width:100%; }
+.modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+.avatar { width:96px; height:96px; border-radius:50%; object-fit:cover; background:#333; }
+.site-footer { text-align:center; color:var(--muted); padding:32px; font-size:.8rem; }
+@media (max-width:700px) { .filters, .form-grid { grid-template-columns:1fr; } .nav { padding:12px 16px; } main { padding:16px; } }

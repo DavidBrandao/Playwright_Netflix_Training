@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KathFlix - Entrar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="auth-page">
+  <main class="auth-box">
+    <h1 class="logo">KATHFLIX</h1>
+    <form id="login-form" novalidate>
+      <h2>Entrar</h2>
+      <div id="login-success" class="msg success" role="status" data-testid="login-success" hidden></div>
+      <div id="login-error" class="msg error" role="alert" data-testid="login-error" hidden></div>
+      <label for="login-email">E-mail</label>
+      <input id="login-email" data-testid="login-email" type="email" autocomplete="username">
+      <label for="login-password">Senha</label>
+      <input id="login-password" data-testid="login-password" type="password" autocomplete="current-password">
+      <button type="submit" id="login-submit" data-testid="login-submit">Entrar</button>
+    </form>
+    <p class="alt">Novo por aqui? <a href="/register.html" id="login-register-link" data-testid="login-register-link">Cadastre-se</a></p>
+  </main>
+  <script src="/js/common.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

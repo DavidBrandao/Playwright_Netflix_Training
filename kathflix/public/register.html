@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KathFlix - Cadastro</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="auth-page">
+  <main class="auth-box">
+    <h1 class="logo">KATHFLIX</h1>
+    <form id="register-form" novalidate>
+      <h2>Criar conta</h2>
+      <div id="register-error" class="msg error" role="alert" data-testid="register-error" hidden></div>
+      <label for="register-name">Nome</label>
+      <input id="register-name" data-testid="register-name" type="text">
+      <label for="register-email">E-mail</label>
+      <input id="register-email" data-testid="register-email" type="email">
+      <label for="register-password">Senha</label>
+      <input id="register-password" data-testid="register-password" type="password">
+      <label for="register-confirm">Confirmar senha</label>
+      <input id="register-confirm" data-testid="register-confirm" type="password">
+      <button type="submit" id="register-submit" data-testid="register-submit">Cadastrar</button>
+    </form>
+    <p class="alt">Já tem conta? <a href="/login.html" id="register-login-link" data-testid="register-login-link">Entrar</a></p>
+  </main>
+  <script src="/js/common.js"></script>
+  <script src="/js/register.js"></script>
+</body>
+</html>
