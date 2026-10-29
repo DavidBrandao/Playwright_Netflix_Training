@@ -46,7 +46,8 @@ components:
     Cats:
       type: object
       properties:
-        total: { type: integer, example: 5 }
+        total: { type: integer, example: 3, description: "user = 3 gatos (1 a 3); admin = 2 gatos (4 e 5)" }
+        cats: { type: array, items: { type: integer }, example: [1, 2, 3], description: Números de gato que o papel do usuário pode achar }
         found: { type: array, items: { type: integer }, example: [1, 3] }
         complete: { type: boolean }
     CatFound:
@@ -304,7 +305,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Cats' }
-              example: { total: 5, found: [1, 3], complete: false }
+              example: { total: 3, cats: [1, 2, 3], found: [1, 3], complete: false }
         '401': { $ref: '#/components/responses/Unauthorized' }
     delete:
       tags: [Perfil]
@@ -314,7 +315,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
   /api/me/cats/{cat}:
     parameters:
-      - { name: cat, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 5 }, description: Número do gato (1 a 5) }
+      - { name: cat, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 5 }, description: "Número do gato: 1 a 3 (usuário) ou 4 e 5 (admin)" }
     post:
       tags: [Perfil]
       summary: Registrar um gato como encontrado (idempotente)

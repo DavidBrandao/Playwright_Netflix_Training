@@ -29,9 +29,9 @@ Dica: `/login.html?alerts=off` desliga o alert nativo e o banner pós-login (`?a
 - Desafios propositais: `id="remove-btn"` repetido nas tabelas do admin, `id="fav-toggle"` repetido nos cards (só CSS/XPath), banner de destaque e rodapé sem `data-testid`, skeleton de carregamento, modal de confirmação, iframe do YouTube, dropdowns, alert nativo e banner pós-login.
 
 ## Gatos da Sorte
-Há 5 bugs escondidos na aplicação. Cada um mostra um gato na frente de tudo (com X para fechar); o progresso aparece no menu (`0/5`), fica salvo por usuário e a tela **Gatos da Sorte** mostra quadrados pretos até o gato ser encontrado. Ao achar os 5, aparece a comemoração com confete. O gabarito para o professor está em `../docs/gabarito-gatos-da-sorte.md`.
+Há 5 bugs escondidos na aplicação. Cada um mostra um gato na frente de tudo (com X para fechar); cada papel tem os seus gatos (usuário: `0/3`; admin: `0/2`), o progresso aparece no menu, fica salvo por usuário e a tela **Gatos da Sorte** mostra quadrados pretos até o gato ser encontrado. Ao achar todos os gatos do seu papel, aparece a comemoração com confete. O gabarito para o professor está em `../docs/gabarito-gatos-da-sorte.md`.
 - `?bugs=off` na URL desliga os gatos (`?bugs=on` religa).
-- API: `GET/DELETE /api/me/cats` e `POST /api/me/cats/{1..5}` (veja o Swagger). `DELETE` zera a coleção do usuário logado, útil no teardown.
+- API: `GET/DELETE /api/me/cats` e `POST /api/me/cats/{n}` (veja o Swagger). `DELETE` zera a coleção do usuário logado, útil no teardown.
 
 ## Regras de validação
 - Capa por upload: apenas `.png`, `.jpg`, `.jpeg`, `.gif` ou `.webp`, até 2 MB.

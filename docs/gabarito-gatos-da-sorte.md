@@ -1,6 +1,6 @@
 # Gabarito: Gatos da Sorte (só para o professor)
 
-São 5 bugs escondidos. Cada um mostra o gato do mesmo número (`public/img/gato_da_sorte/N.jpeg`) com a frase
+São 5 bugs escondidos, divididos por papel: o **usuário comum** acha os gatos 1, 2 e 3 (0/3) e o **admin** acha os gatos 4 e 5 (0/2). Os bugs 2 e 3 também disparam no perfil do admin, mas não contam para ele. Cada um mostra o gato do mesmo número (`public/img/gato_da_sorte/N.jpeg`) com a frase
 "Você encontrou um ~~bug~~ gato da sorte." e, abaixo, "Você achou o gato N, faltam X" (X diminui a cada gato: 4, 3, 2, falta 1, não falta nenhum). O gato só aparece na primeira vez; o progresso fica salvo por usuário.
 
 | # | Tela | Como acionar |
@@ -11,7 +11,7 @@ São 5 bugs escondidos. Cada um mostra o gato do mesmo número (`public/img/gato
 | 4 | Admin → Usuários | Marcar/desmarcar "Mostrar todos os cadastrados" 10 vezes seguidas (qualquer outro clique zera a contagem). |
 | 5 | Admin → Títulos | Salvar uma série com mais de 3 episódios, ou escrever o ano em texto (ex.: "dois mil"). |
 
-Ao achar os 5, aparece a comemoração com confete, e a foto "parabéns" fica na tela **Gatos da Sorte**.
+Ao achar todos os gatos do seu papel (3 para o usuário, 2 para o admin), aparece a comemoração com confete, e a foto "parabéns" fica na tela **Gatos da Sorte**, nos dois perfis.
 
 ## Para a aula
 - `?bugs=off` na URL desliga os gatos (`?bugs=on` religa).

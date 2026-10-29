@@ -16,7 +16,7 @@
     const found = new Set(state.found);
     document.getElementById('cats-counter').textContent = `Você encontrou ${found.size} de ${state.total} gatos da sorte`;
     let html = '';
-    for (let n = 1; n <= state.total; n++) html += slot(`cat-${n}`, `Gato da sorte ${n}`, found.has(n), KF.cats.catImg(n));
+    for (const n of state.cats) html += slot(`cat-${n}`, `Gato da sorte ${n}`, found.has(n), KF.cats.catImg(n));
     html += slot('cat-parabens', 'Parabéns', state.complete, KF.cats.CONGRATS_IMG);
     if (state.complete) html = `<p class="cats-congrats-line" data-testid="cats-complete-text">${KF.cats.CONGRATS_TEXT}</p>` + html;
     grid.innerHTML = html;

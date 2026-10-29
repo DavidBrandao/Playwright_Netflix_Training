@@ -1,6 +1,6 @@
 // Gatos da Sorte: 5 bugs escondidos. Cada um mostra um gato; o progresso fica salvo por usuário (API /api/me/cats).
 (function () {
-  const TOTAL = 5;
+  const PRE_LOGIN_TOTAL = 3; // bug 1 é do usuário comum; antes do login ainda não se sabe o papel
   const PENDING_KEY = 'kathflix.pendingCats'; // gato achado antes do login (ex.: bug 1) — enviado ao logar
   const catImg = (n) => `/img/gato_da_sorte/${n}.jpeg`;
   const CONGRATS_IMG = '/img/gato_da_sorte/parabens.jpeg';
@@ -15,7 +15,6 @@
   }
 
   const cats = {
-    TOTAL,
     catImg,
     CONGRATS_IMG,
     CONGRATS_TEXT,
@@ -31,7 +30,7 @@
 
     updateBadge() {
       const el = document.getElementById('nav-cats-count');
-      if (el && cats.state) el.textContent = `${cats.state.found.length}/${TOTAL}`;
+      if (el && cats.state) el.textContent = `${cats.state.found.length}/${cats.state.total}`;
     },
 
     // Chamado pelas telas quando o aluno aciona um bug. Só mostra o gato na primeira vez.
@@ -41,14 +40,14 @@
         const pending = readPending();
         if (pending.includes(n)) return;
         localStorage.setItem(PENDING_KEY, JSON.stringify([...pending, n]));
-        cats.showCat(n, { remaining: TOTAL - pending.length - 1 });
+        cats.showCat(n, { remaining: PRE_LOGIN_TOTAL - pending.length - 1 });
         return;
       }
       try {
         const r = await KF.api(`/me/cats/${n}`, { method: 'POST' });
         cats.state = r;
         cats.updateBadge();
-        if (r.newlyFound) cats.showCat(n, { remaining: TOTAL - r.found.length, thenCongrats: r.complete });
+        if (r.newlyFound) cats.showCat(n, { remaining: r.total - r.found.length, thenCongrats: r.complete });
       } catch { /* o bug nunca deve atrapalhar a tela */ }
     },
 
