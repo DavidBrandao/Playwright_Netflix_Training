@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KathFlix - Admin</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="nav"></div>
+  <main>
+    <h1>Administração</h1>
+    <div class="tabs" role="tablist">
+      <button type="button" id="tab-titles" data-testid="tab-titles" role="tab" aria-selected="true">Filmes e séries</button>
+      <button type="button" id="tab-users" data-testid="tab-users" role="tab" aria-selected="false" class="secondary">Usuários</button>
+    </div>
+    <div id="admin-message" class="msg" role="alert" data-testid="admin-message" hidden></div>
+
+    <div id="panel-titles">
+      <h2>Adicionar título</h2>
+      <form id="title-form" novalidate class="form-grid">
+        <div><label for="title-name">Título</label><input id="title-name" data-testid="title-name" type="text"></div>
+        <div><label for="title-genre">Categoria</label>
+          <select id="title-genre" data-testid="title-genre">
+            <option>Ação</option><option>Comédia</option><option>Drama</option><option>Terror</option>
+            <option>Ficção</option><option>Animação</option><option>Documentário</option>
+          </select></div>
+        <div><label for="title-type">Tipo</label>
+          <select id="title-type" data-testid="title-type"><option value="movie">Filme</option><option value="series">Série</option></select></div>
+        <div><label for="title-year">Ano</label><input id="title-year" data-testid="title-year" type="number" min="1900" max="2100"></div>
+        <div class="full"><label for="title-description">Descrição</label><textarea id="title-description" data-testid="title-description" rows="2"></textarea></div>
+        <div><label for="title-cover-file">Imagem de capa (arquivo)</label><input id="title-cover-file" data-testid="title-cover-file" type="file" accept="image/*"></div>
+        <div><label for="title-cover-url">ou URL da imagem</label><input id="title-cover-url" data-testid="title-cover-url" type="url"></div>
+        <div class="full" id="movie-fields">
+          <label for="title-video-url">Link do vídeo (YouTube)</label>
+          <input id="title-video-url" data-testid="title-video-url" type="url" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+        <div class="full" id="series-fields" hidden>
+          <label>Episódios</label>
+          <div id="episode-list"></div>
+          <button type="button" id="add-episode" data-testid="add-episode" class="secondary">+ Adicionar episódio</button>
+        </div>
+        <div class="full"><button type="submit" id="admin-add-title" data-testid="admin-add-title">Adicionar ao catálogo</button></div>
+      </form>
+
+      <h2>Catálogo atual</h2>
+      <table data-testid="titles-table">
+        <thead><tr><th>Título</th><th>Tipo</th><th>Categoria</th><th>Ano</th><th></th></tr></thead>
+        <tbody id="titles-body"></tbody>
+      </table>
+    </div>
+
+    <div id="panel-users" hidden>
+      <h2>Usuários</h2>
+      <label><input id="show-all-users" data-testid="show-all-users" type="checkbox" style="width:auto"> Mostrar todos os cadastrados (não só os ativos)</label>
+      <table data-testid="users-table">
+        <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Última atividade</th><th></th></tr></thead>
+        <tbody id="users-body"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <div id="confirm-modal" class="modal-bg" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-text" data-testid="confirm-modal">
+      <p id="confirm-text" data-testid="confirm-text"></p>
+      <div class="actions">
+        <button type="button" id="confirm-cancel" data-testid="confirm-cancel" class="secondary">Cancelar</button>
+        <button type="button" id="confirm-ok" data-testid="confirm-ok" class="danger">Remover</button>
+      </div>
+    </div>
+  </div>
+  <script src="/js/common.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
