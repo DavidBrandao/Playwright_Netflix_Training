@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KathFlix - Assistir</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="nav"></div>
+  <main>
+    <h1 id="watch-title" data-testid="watch-title"></h1>
+    <p id="watch-meta" data-testid="watch-meta"></p>
+    <iframe id="player" data-testid="player" class="player" title="Player de vídeo"
+            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <div id="episodes" class="episodes" data-testid="episodes" hidden></div>
+    <p id="watch-description" data-testid="watch-description"></p>
+    <button type="button" id="watch-favorite" data-testid="watch-favorite"></button>
+    <div id="watch-error" class="msg error" role="alert" hidden></div>
+  </main>
+  <script src="/js/common.js"></script>
+  <script src="/js/watch.js"></script>
+</body>
+</html>
