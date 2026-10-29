@@ -4,6 +4,8 @@ const path = require('node:path');
 const multer = require('multer');
 const { httpError } = require('./errors');
 
+const ALLOWED_EXT = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
+
 function makeUpload(dir) {
   fs.mkdirSync(dir, { recursive: true });
   return multer({
@@ -14,7 +16,7 @@ function makeUpload(dir) {
     }),
     limits: { fileSize: 2 * 1024 * 1024 },
     fileFilter: (req, file, cb) =>
-      file.mimetype.startsWith('image/') ? cb(null, true) : cb(httpError(400, 'Apenas imagens são permitidas')),
+      ALLOWED_EXT.has(path.extname(file.originalname).toLowerCase()) && file.mimetype.startsWith('image/') ? cb(null, true) : cb(httpError(400, 'Apenas imagens PNG, JPG, GIF ou WEBP são permitidas')),
   });
 }
 
