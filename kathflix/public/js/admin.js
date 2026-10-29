@@ -82,7 +82,10 @@
     form.append('title', $('title-name').value.trim());
     form.append('genre', $('title-genre').value);
     form.append('description', $('title-description').value);
-    if ($('title-year').value) form.append('year', $('title-year').value);
+    const year = $('title-year').value.trim();
+    if (year) form.append('year', year);
+    // bug 5: ano escrito em texto
+    if (year && !/^\d+$/.test(year)) KF.cats.find(5);
     const file = $('title-cover-file').files[0];
     if (file) form.append('cover', file);
     else if ($('title-cover-url').value.trim()) form.append('cover_url', $('title-cover-url').value.trim());
@@ -96,6 +99,7 @@
         video_url: row.querySelector('[name=ep-url]').value.trim(),
       }));
       form.append('episodes', JSON.stringify(eps));
+      if (eps.length > 3) KF.cats.find(5); // bug 5: série com mais de 3 episódios
     }
     try {
       const t = await KF.api('/admin/titles', { method: 'POST', form });
@@ -117,7 +121,14 @@
         <td><button type="button" id="remove-btn" class="danger" ${u.id === me.id ? 'disabled' : ''}>Remover</button></td>
       </tr>`).join('');
   }
-  $('show-all-users').addEventListener('change', loadUsers);
+  // bug 4: marcar/desmarcar "Mostrar todos" 10 vezes seguidas (qualquer outro clique zera a contagem)
+  let showAllToggles = 0;
+  document.addEventListener('click', (e) => { if (!e.target.closest('#show-all-label')) showAllToggles = 0; });
+  $('show-all-users').addEventListener('change', () => {
+    showAllToggles += 1;
+    if (showAllToggles === 10) { showAllToggles = 0; KF.cats.find(4); }
+    loadUsers();
+  });
 
   $('users-body').addEventListener('click', async (e) => {
     if (!e.target.closest('#remove-btn')) return;

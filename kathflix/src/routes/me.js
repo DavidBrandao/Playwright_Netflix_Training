@@ -8,6 +8,7 @@ module.exports = function meRouter(uploadDir) {
   const router = express.Router();
   const upload = makeUpload(uploadDir);
   router.use(auth);
+  router.use('/cats', require('./cats'));
 
   router.get('/', (req, res) => res.json(publicUser(req.user)));
 

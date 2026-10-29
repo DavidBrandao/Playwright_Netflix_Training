@@ -43,6 +43,19 @@ components:
       type: http
       scheme: bearer
   schemas:
+    Cats:
+      type: object
+      properties:
+        total: { type: integer, example: 5 }
+        found: { type: array, items: { type: integer }, example: [1, 3] }
+        complete: { type: boolean }
+    CatFound:
+      allOf:
+        - { $ref: '#/components/schemas/Cats' }
+        - type: object
+          properties:
+            cat: { type: integer }
+            newlyFound: { type: boolean }
     Error:
       type: object
       properties:
@@ -280,6 +293,40 @@ paths:
       summary: Excluir a própria conta
       responses:
         '204': { description: Conta removida }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/me/cats:
+    get:
+      tags: [Perfil]
+      summary: Gatos da Sorte encontrados pelo usuário logado
+      responses:
+        '200':
+          description: Estado da coleção
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cats' }
+              example: { total: 5, found: [1, 3], complete: false }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [Perfil]
+      summary: Zerar a coleção de gatos do usuário logado (teardown)
+      responses:
+        '204': { description: Coleção zerada }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/me/cats/{cat}:
+    parameters:
+      - { name: cat, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 5 }, description: Número do gato (1 a 5) }
+    post:
+      tags: [Perfil]
+      summary: Registrar um gato como encontrado (idempotente)
+      description: 201 na primeira vez, 200 se o gato já estava na coleção.
+      responses:
+        '201':
+          description: Gato novo
+          content: { application/json: { schema: { $ref: '#/components/schemas/CatFound' } } }
+        '200':
+          description: Gato já encontrado antes
+          content: { application/json: { schema: { $ref: '#/components/schemas/CatFound' } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
   /api/admin/titles:
     post:

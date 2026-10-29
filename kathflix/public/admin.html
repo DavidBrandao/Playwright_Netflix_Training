@@ -27,7 +27,7 @@
           </select></div>
         <div><label for="title-type">Tipo</label>
           <select id="title-type" data-testid="title-type"><option value="movie">Filme</option><option value="series">Série</option></select></div>
-        <div><label for="title-year">Ano</label><input id="title-year" data-testid="title-year" type="number" min="1900" max="2100"></div>
+        <div><label for="title-year">Ano</label><input id="title-year" data-testid="title-year" type="text" inputmode="numeric" placeholder="ex.: 2024"></div>
         <div class="full"><label for="title-description">Descrição</label><textarea id="title-description" data-testid="title-description" rows="2"></textarea></div>
         <div><label for="title-cover-file">Imagem de capa (arquivo)</label><input id="title-cover-file" data-testid="title-cover-file" type="file" accept="image/*"></div>
         <div><label for="title-cover-url">ou URL da imagem</label><input id="title-cover-url" data-testid="title-cover-url" type="url"></div>
@@ -52,7 +52,7 @@
 
     <div id="panel-users" hidden>
       <h2>Usuários</h2>
-      <label><input id="show-all-users" data-testid="show-all-users" type="checkbox" style="width:auto"> Mostrar todos os cadastrados (não só os ativos)</label>
+      <label id="show-all-label"><input id="show-all-users" data-testid="show-all-users" type="checkbox" style="width:auto"> Mostrar todos os cadastrados (não só os ativos)</label>
       <table data-testid="users-table">
         <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Última atividade</th><th></th></tr></thead>
         <tbody id="users-body"></tbody>
@@ -70,6 +70,7 @@
     </div>
   </div>
   <script src="/js/common.js"></script>
+  <script src="/js/lucky-cats.js"></script>
   <script src="/js/admin.js"></script>
 </body>
 </html>

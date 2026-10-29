@@ -30,6 +30,11 @@
     if ($('profile-password').value) form.append('password', $('profile-password').value);
     const file = $('profile-avatar-file').files[0];
     if (file) form.append('avatar', file);
+    // bug 2: avatar acima do limite de 2 MB
+    if (file && file.size > 2 * 1024 * 1024) KF.cats.find(2);
+    // bug 3: bio com exatamente 280 caracteres ou com emoji
+    const bio = $('profile-bio').value;
+    if (bio.length === 280 || /\p{Extended_Pictographic}/u.test(bio)) KF.cats.find(3);
     try {
       const user = await KF.api('/me', { method: 'PUT', form });
       KF.setUser(user);

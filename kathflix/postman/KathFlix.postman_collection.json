@@ -43,6 +43,14 @@
       ]
     },
     {
+      "name": "Gatos da Sorte",
+      "item": [
+        { "name": "Listar gatos encontrados", "request": { "method": "GET", "url": "{{baseUrl}}/api/me/cats" } },
+        { "name": "Registrar gato 1", "request": { "method": "POST", "url": "{{baseUrl}}/api/me/cats/1" } },
+        { "name": "Zerar gatos", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/me/cats" } }
+      ]
+    },
+    {
       "name": "Perfil",
       "item": [
         { "name": "Meus dados", "request": { "method": "GET", "url": "{{baseUrl}}/api/me" } },

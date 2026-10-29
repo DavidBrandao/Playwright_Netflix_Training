@@ -47,6 +47,12 @@ export class KathflixApi {
   /** Cria usuários e títulos em lote, sem autenticação. Atômico: tudo ou nada. */
   seed(data: { users?: Json[]; titles?: Json[] }) { return this.request('POST', '/api/test/seed', { json: data }); }
 
+  /** Gatos da Sorte do usuário logado: { total, found, complete }. */
+  cats(token: string) { return this.request('GET', '/api/me/cats', { token }); }
+
+  /** Zera os gatos encontrados pelo usuário do token (teardown). */
+  resetCats(token: string) { return this.request('DELETE', '/api/me/cats', { token }); }
+
   /** Teardown: remove usuários (e-mail) e títulos (nome) que começam com o prefixo (mínimo 3 caracteres, sem contar % e _). */
   cleanup(prefix: string) { return this.request('DELETE', '/api/test/cleanup', { json: { prefix } }); }
 

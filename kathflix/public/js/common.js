@@ -66,11 +66,13 @@
           <nav>
             <a href="/home.html" id="nav-home" data-testid="nav-home" class="${active === 'home' ? 'active' : ''}">Início</a>
             <a href="/profile.html" id="nav-profile" data-testid="nav-profile" class="${active === 'profile' ? 'active' : ''}">Perfil</a>
+            <a href="/cats.html" id="nav-cats" data-testid="nav-cats" class="${active === 'cats' ? 'active' : ''}">Gatos da Sorte <span id="nav-cats-count" data-testid="nav-cats-count" class="badge">0/5</span></a>
             ${user.role === 'admin' ? `<a href="/admin.html" id="nav-admin" data-testid="nav-admin" class="${active === 'admin' ? 'active' : ''}">Admin</a>` : ''}
           </nav>
           <span id="nav-username" data-testid="nav-username">${KF.esc(user.name)}</span>
           <button type="button" id="nav-logout" data-testid="nav-logout" class="secondary">Sair</button>
         </header>`;
+      if (KF.cats) { KF.cats.updateBadge(); KF.cats.load().catch(() => {}); }
       document.getElementById('nav-logout').addEventListener('click', async () => {
         try { await KF.api('/auth/logout', { method: 'POST' }); } catch { /* sessão já inválida */ }
         KF.clearSession();

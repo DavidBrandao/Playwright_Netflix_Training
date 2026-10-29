@@ -35,7 +35,7 @@ function seedIfEmpty(db) {
 }
 
 function resetToSeed(db) {
-  for (const t of ['sessions', 'favorites', 'episodes', 'titles', 'users']) db.exec(`DELETE FROM ${t}`);
+  for (const t of ['sessions', 'lucky_cats', 'favorites', 'episodes', 'titles', 'users']) db.exec(`DELETE FROM ${t}`);
   seedAll(db);
 }
 
