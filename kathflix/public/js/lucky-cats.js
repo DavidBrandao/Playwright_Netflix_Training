@@ -41,14 +41,14 @@
         const pending = readPending();
         if (pending.includes(n)) return;
         localStorage.setItem(PENDING_KEY, JSON.stringify([...pending, n]));
-        cats.showCat(n);
+        cats.showCat(n, { remaining: TOTAL - pending.length - 1 });
         return;
       }
       try {
         const r = await KF.api(`/me/cats/${n}`, { method: 'POST' });
         cats.state = r;
         cats.updateBadge();
-        if (r.newlyFound) cats.showCat(n, { thenCongrats: r.complete });
+        if (r.newlyFound) cats.showCat(n, { remaining: TOTAL - r.found.length, thenCongrats: r.complete });
       } catch { /* o bug nunca deve atrapalhar a tela */ }
     },
 
@@ -60,7 +60,7 @@
       }
     },
 
-    showCat(n, { thenCongrats = false } = {}) {
+    showCat(n, { remaining = 0, thenCongrats = false } = {}) {
       closeLayer('lucky-cat-layer');
       const layer = document.createElement('div');
       layer.id = 'lucky-cat-layer';
@@ -69,7 +69,8 @@
         <div id="lucky-cat-popup" class="cat-popup" role="dialog" aria-label="Gato da sorte ${n}" data-testid="lucky-cat-popup" data-cat="${n}">
           <button type="button" id="lucky-cat-close" class="cat-close" aria-label="Fechar" data-testid="lucky-cat-close">×</button>
           <img id="lucky-cat-img" data-testid="lucky-cat-img" src="${catImg(n)}" alt="Gato da sorte ${n}">
-          <p id="lucky-cat-text" data-testid="lucky-cat-text">Você encontrou um <s>bug</s> gato da sorte. ${n} de ${TOTAL}</p>
+          <p id="lucky-cat-text" data-testid="lucky-cat-text">Você encontrou um <s>bug</s> gato da sorte.</p>
+          <p id="lucky-cat-remaining" data-testid="lucky-cat-remaining">${remainingText(n, remaining)}</p>
         </div>`;
       document.body.appendChild(layer);
       const close = () => { closeLayer('lucky-cat-layer'); if (thenCongrats) cats.showCongrats(); };
@@ -99,6 +100,11 @@
       layer.querySelector('#cats-congrats-close').focus();
     },
   };
+
+  function remainingText(n, remaining) {
+    if (remaining <= 0) return `Você achou o gato ${n}, não falta nenhum!`;
+    return `Você achou o gato ${n}, ${remaining === 1 ? "falta 1" : "faltam " + remaining}`;
+  }
 
   function closeLayer(id) {
     const el = document.getElementById(id);

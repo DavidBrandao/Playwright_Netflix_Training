@@ -1,7 +1,7 @@
 # Gabarito: Gatos da Sorte (só para o professor)
 
 São 5 bugs escondidos. Cada um mostra o gato do mesmo número (`public/img/gato_da_sorte/N.jpeg`) com a frase
-"Você encontrou um ~~bug~~ gato da sorte. N de 5". O gato só aparece na primeira vez; o progresso fica salvo por usuário.
+"Você encontrou um ~~bug~~ gato da sorte." e, abaixo, "Você achou o gato N, faltam X" (X diminui a cada gato: 4, 3, 2, falta 1, não falta nenhum). O gato só aparece na primeira vez; o progresso fica salvo por usuário.
 
 | # | Tela | Como acionar |
 |---|------|--------------|
