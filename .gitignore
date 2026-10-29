@@ -1,0 +1,11 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+.DS_Store
+
+# KathFlix
+kathflix/data/*.db
+kathflix/data/*.db-*
+kathflix/public/uploads/*
+!kathflix/public/uploads/.gitkeep

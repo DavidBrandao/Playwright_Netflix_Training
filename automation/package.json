@@ -1,0 +1,11 @@
+{
+  "name": "test_prof",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.2"
+  },
+  "scripts": {}
+}
