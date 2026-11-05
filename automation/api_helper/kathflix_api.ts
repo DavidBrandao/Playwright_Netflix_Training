@@ -33,11 +33,6 @@ export class KathflixApi extends ApiBase {
     /** Remove usuários (e-mail) e títulos (nome) que começam com o prefixo. */
     limparPorPrefixo(prefixo: string) { return this.delete('/api/test/cleanup', { prefix: prefixo }) }
 
-    // ---- gatos da sorte (usuário logado) ----
-    buscarGatos() { return this.get<{ total: number, cats: number[], found: number[], complete: boolean }>('/api/me/cats') }
-    registrarGato(n: number) { return this.post(`/api/me/cats/${n}`) }
-    resetarGatos() { return this.delete('/api/me/cats') }
-
     // ---- admin (precisa de token de admin) ----
     criarTitulo(titulo: Json) { return this.post<{ id: number }>('/api/admin/titles', titulo) }
     removerTitulo(id: number) { return this.delete(`/api/admin/titles/${id}`) }

@@ -1,36 +1,44 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, TestInfo } from '@playwright/test';
 import { LoginPage } from '../pages/login.page';
 import { HomePage } from '../pages/home.page';
-import { LuckyCatPopup } from '../pages/lucky-cat.page';
-import { KathflixApi } from '../api_helper/kathflix_api';
+import { ADMIN, KathflixApi } from '../api_helper/kathflix_api';
 
-// Prefixo único por worker: o cleanup do afterAll só apaga o que este arquivo criou.
-const PREFIXO = `autologin-${Date.now()}-`
 const SENHA = 'Senha123'
+
+// Só os cenários listados aqui (pelo nome do teste) precisam de um usuário criado pela API.
+// Os outros (senha errada, e-mail vazio, esqueci a senha...) não fazem login com sucesso, então não criam nada.
+const CENARIOS_COM_USUARIO = ['login com sucesso']
 
 let loginPage: LoginPage
 let homePage: HomePage
-let gato: LuckyCatPopup
-let api: KathflixApi
+const api = new KathflixApi()
+let prefixo: string
 let emailUsuario: string
 
-test.beforeAll(async () => {
-    // Arrange (via API): cria o usuário usado nos testes
-    api = new KathflixApi()
-    emailUsuario = await api.criarUsuario(PREFIXO, SENHA)
-})
+function precisaDeUsuario(testInfo: TestInfo): boolean {
+    return CENARIOS_COM_USUARIO.some((nome) => testInfo.title.includes(nome))
+}
 
-test.afterAll(async () => {
-    // Teardown (via API): remove o que foi criado
-    await api.limparPorPrefixo(PREFIXO)
-})
-
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({page}, testInfo) => {
     loginPage = new LoginPage(page)
     homePage = new HomePage(page)
-    gato = new LuckyCatPopup(page)
-    // Arrange
+
+    // Arrange (via API), condicional: cada teste é independente e cria só o que usa.
+    // O prefixo é único por teste, então testes em paralelo não apagam os dados uns dos outros.
+    if (precisaDeUsuario(testInfo)) {
+        prefixo = `autologin-${Date.now()}-${testInfo.workerIndex}-`
+        emailUsuario = await api.criarUsuario(prefixo, SENHA)
+    }
+
+    // Arrange (tela)
     await loginPage.acessarSite()
+})
+
+test.afterEach(async ({}, testInfo) => {
+    // Teardown (via API): remove o usuário, só nos cenários que o criaram (mesmo IF do beforeEach)
+    if (precisaDeUsuario(testInfo)) {
+        await api.limparPorPrefixo(prefixo)
+    }
 })
 
 test('login com sucesso', async({page}) => {
@@ -42,8 +50,8 @@ test('login com sucesso', async({page}) => {
 })
 
 test('tentativa de login com senha errada', async() => {
-    // Act
-    await loginPage.login(emailUsuario, 'SenhaErrada')
+    // Act (o admin do seed sempre existe, então não precisa criar usuário)
+    await loginPage.login(ADMIN.email, 'SenhaErrada')
     // Assert
     await expect(loginPage.error).toHaveText('E-mail ou senha inválidos')
 })
@@ -59,19 +67,14 @@ test('tentativa de login sem e-mail', async() => {
 })
 
 test('tentativa de login sem password', async() => {
-    await loginPage.login(emailUsuario, '')
+    await loginPage.login(ADMIN.email, '')
     await expect(loginPage.error).toHaveText('Informe e-mail e senha')
 })
 
-test('bug 1: "Esqueci a senha" sem e-mail mostra o gato da sorte', async({}, testInfo) => {
+test('esqueci a senha sem e-mail deve pedir o e-mail', async() => {
     // Act
     await loginPage.esqueciASenha()
     // Assert
-    await expect(gato.popup).toBeVisible()
-    expect(await gato.imagemCarregada()).toBe(true)
-    await expect(gato.text).toHaveText('Você encontrou um bug gato da sorte.')
-    await expect(gato.strikethrough).toHaveText('bug')
-    await expect(gato.remaining).toHaveText('Você achou o gato 1, faltam 2')
-    // guarda a imagem do gato no relatório
-    await testInfo.attach('gato-da-sorte-1', { body: await gato.image.screenshot(), contentType: 'image/png' })
+    await expect(loginPage.error).toBeVisible()
+    await expect(loginPage.error).toHaveText('Informe seu e-mail para recuperar a senha')
 })

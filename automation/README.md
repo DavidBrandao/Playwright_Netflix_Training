@@ -24,35 +24,39 @@ Para apontar para outra URL, use a variável `KATHFLIX_URL` (padrão `http://loc
 ## Estrutura
 | Pasta / arquivo | O que tem |
 |---|---|
-| `tests/login.spec.ts` | Testes de login, incluindo o do gato da sorte (bug 1). Serve de modelo de estilo. |
-| `pages/` | Page Objects: `login.page.ts`, `home.page.ts` e `lucky-cat.page.ts` (popup do gato). |
+| `tests/login.spec.ts` | Testes de login, incluindo o do "esqueci a senha", que falha de propósito (a tela tem um bug escondido). Serve de modelo de estilo. |
+| `pages/` | Page Objects: `login.page.ts` e `home.page.ts`. |
 | `api_helper/common_api.ts` | `ApiBase`: métodos base `get`, `post`, `put` e `delete` (URL, token, JSON e erro `ApiError`). |
-| `api_helper/kathflix_api.ts` | `KathflixApi`: chamadas da API do KathFlix em cima do `ApiBase` (login, criar usuário, limpar por prefixo, gatos, títulos). |
+| `api_helper/kathflix_api.ts` | `KathflixApi`: chamadas da API do KathFlix em cima do `ApiBase` (login, criar usuário, limpar por prefixo, títulos). |
 | `playwright.config.ts` | `baseURL`, screenshot em falha, servidor web e projetos. |
 | `testasync.ts` | Exemplo solto de `async/await`. |
 
 ## Estilo dos testes
 - Os Page Objects são variáveis no topo do arquivo (`let loginPage: LoginPage`) e criados no `beforeEach`.
 - Os testes só chamam métodos e locators da page (`loginPage.login(...)`, `loginPage.error`).
-- Setup e teardown de dados vão em `beforeAll`/`afterAll` pela API, sem passar pela tela.
+- Setup e teardown de dados vão em `beforeEach`/`afterEach` pela API, sem passar pela tela, e **só nos cenários que precisam** (cada teste é independente).
 - Os testes seguem Arrange, Act, Assert (comentários no código).
 
-Exemplo do `login.spec.ts`:
+Exemplo do `login.spec.ts`: só o teste `login com sucesso` precisa de usuário, então o nome do teste é checado com um `if`:
 
-    test.beforeAll(async () => {
-        api = new KathflixApi()
-        emailUsuario = await api.criarUsuario(PREFIXO, SENHA)   // cria pela API
+    const CENARIOS_COM_USUARIO = ['login com sucesso']
+    const precisaDeUsuario = (testInfo) => CENARIOS_COM_USUARIO.some((nome) => testInfo.title.includes(nome))
+
+    test.beforeEach(async ({page}, testInfo) => {
+        if (precisaDeUsuario(testInfo)) {
+            prefixo = `autologin-${Date.now()}-${testInfo.workerIndex}-`
+            emailUsuario = await api.criarUsuario(prefixo, SENHA)   // cria pela API
+        }
+        await loginPage.acessarSite()
     })
-    test.afterAll(async () => {
-        await api.limparPorPrefixo(PREFIXO)                     // remove pela API
+    test.afterEach(async ({}, testInfo) => {
+        if (precisaDeUsuario(testInfo)) await api.limparPorPrefixo(prefixo)   // remove pela API
     })
 
-O `PREFIXO` é único por execução (`autologin-<timestamp>-`), então vários workers em paralelo não apagam os dados uns dos outros.
+O prefixo é único por teste, então testes em paralelo não apagam os dados uns dos outros. Para um novo cenário que precise de usuário, é só incluir parte do nome dele em `CENARIOS_COM_USUARIO`.
 
 ## Screenshot em falha
 O `playwright.config.ts` tem `screenshot: 'only-on-failure'`. Quando um teste falha, a imagem vai para o relatório HTML (`npm run report`) e para a pasta `test-results/`.
-
-O teste do bug 1 também anexa ao relatório a imagem do gato da sorte (`testInfo.attach`), mesmo quando passa.
 
 ## Como criar um teste novo
 1. Crie ou reaproveite um Page Object em `pages/` (prefira `getByTestId`, `getByRole`, `getByLabel`).
