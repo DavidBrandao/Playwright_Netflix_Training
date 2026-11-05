@@ -5,7 +5,7 @@ São 5 bugs escondidos, divididos por papel: o **usuário comum** acha os gatos 
 
 | # | Tela | Como acionar |
 |---|------|--------------|
-| 1 | Login | Clicar em **Esqueci a senha** com o campo e-mail vazio. Como ainda não há usuário, o gato fica guardado no navegador e é enviado à conta no próximo login. |
+| 1 | Login | Clicar em **Esqueci a senha** com o campo e-mail vazio. A mensagem também aparece com caracteres estranhos (o texto correto seria "Informe seu e-mail para recuperar a senha"). Como ainda não há usuário, o gato fica guardado no navegador e é enviado à conta no próximo login. |
 | 2 | Perfil | Selecionar um avatar com mais de 2 MB e clicar em Salvar (o gato aparece junto com o erro "Imagem acima de 2 MB"). |
 | 3 | Perfil | Salvar uma bio com mais de 280 caracteres (acima do limite), ou com emoji. |
 | 4 | Admin → Usuários | Marcar/desmarcar "Mostrar todos os cadastrados" 10 vezes seguidas (qualquer outro clique zera a contagem). |

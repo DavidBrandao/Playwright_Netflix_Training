@@ -14,8 +14,9 @@
     err.hidden = true;
     const email = document.getElementById('login-email').value.trim();
     if (!email) {
-      KF.show(err, 'Informe seu e-mail para recuperar a senha');
-      KF.cats.find(1); // bug 1: "Esqueci a senha" com e-mail vazio
+      // bug 1: "Esqueci a senha" com e-mail vazio mostra a mensagem com caracteres estranhos (o texto certo é 'Informe seu e-mail para recuperar a senha')
+      KF.show(err, 'Infórmã s€u é-m@il p4ra r3cupérãr a sênh� #%&?');
+      KF.cats.find(1);
       return;
     }
     info.hidden = false;
